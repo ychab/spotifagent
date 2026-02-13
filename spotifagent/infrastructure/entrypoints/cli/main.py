@@ -1,3 +1,5 @@
+from typing import cast
+
 import typer
 
 from spotifagent import __version__
@@ -5,6 +7,7 @@ from spotifagent.infrastructure.config.loggers import configure_loggers
 from spotifagent.infrastructure.config.settings.app import app_settings
 from spotifagent.infrastructure.entrypoints.cli.commands import spotify
 from spotifagent.infrastructure.entrypoints.cli.commands import users
+from spotifagent.infrastructure.entrypoints.cli.parsers import parse_log_handlers
 from spotifagent.infrastructure.types import LogHandler
 from spotifagent.infrastructure.types import LogLevel
 
@@ -27,10 +30,18 @@ def version_callback(show_version: bool) -> None:
 @app.callback()
 def main(
     log_level: LogLevel = typer.Option(
-        app_settings.LOG_LEVEL, "--log-level", "-l", case_sensitive=False, help="Set the logging level."
+        app_settings.LOG_LEVEL,
+        "--log-level",
+        "-l",
+        case_sensitive=False,
+        help="Set the logging level.",
     ),
-    log_handler: LogHandler = typer.Option(
-        "console", "--log-handler", case_sensitive=False, help="Set the logging handler."
+    log_handlers: list[str] = typer.Option(
+        ["cli", "cli_alert"],
+        "--log-handler",
+        case_sensitive=True,
+        callback=parse_log_handlers,
+        help="Set the logging handlers.",
     ),
     version: bool | None = typer.Option(
         None,
@@ -41,4 +52,4 @@ def main(
         is_eager=True,
     ),
 ):
-    configure_loggers(level=log_level, handlers=[log_handler])
+    configure_loggers(level=log_level, handlers=cast(list[LogHandler], log_handlers))

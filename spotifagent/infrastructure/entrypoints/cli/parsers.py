@@ -1,4 +1,5 @@
 from typing import Annotated
+from typing import get_args
 
 from pydantic import EmailStr
 from pydantic import TypeAdapter
@@ -8,6 +9,7 @@ import typer
 
 from spotifagent.domain.entities.users import User
 from spotifagent.domain.entities.users import UserCreate
+from spotifagent.infrastructure.types import LogHandler
 
 password_field_info = UserCreate.model_fields["password"]
 
@@ -31,3 +33,11 @@ def parse_email(value: str) -> str:
         raise typer.BadParameter(e.errors()[0]["msg"]) from e
 
     return value
+
+
+def parse_log_handlers(values: list[str]) -> list[str]:
+    for value in values:
+        if value not in get_args(LogHandler):
+            raise typer.BadParameter(f"Invalid handler: '{values}'. Allowed: {', '.join(get_args(LogHandler))}")
+
+    return values

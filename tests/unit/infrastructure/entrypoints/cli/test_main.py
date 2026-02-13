@@ -6,6 +6,8 @@ from typer.testing import CliRunner
 from spotifagent import __version__
 from spotifagent.infrastructure.entrypoints.cli.main import app
 
+from tests.unit.infrastructure.entrypoints.cli.conftest import TextCleaner
+
 
 class TestBaseCommand:
     @pytest.mark.parametrize("cmd_arg", ["--version", "-v"])
@@ -30,15 +32,34 @@ class TestBaseCommand:
             handlers=mock.ANY,
         )
 
-    def test__log_handler(self, runner: CliRunner, block_cli_configure_loggers: mock.Mock) -> None:
+    def test__log_handler__nominal(self, runner: CliRunner, block_cli_configure_loggers: mock.Mock) -> None:
         @app.command("noop")
         def noop():
             pass
 
-        result = runner.invoke(app, ["--log-handler", "null", "noop"])
+        result = runner.invoke(app, ["--log-handler", "console", "--log-handler", "null", "noop"])
         assert result.exit_code == 0
 
         block_cli_configure_loggers.assert_called_once_with(
             level=mock.ANY,
-            handlers=["null"],
+            handlers=["console", "null"],
         )
+
+    def test__log_handler__invalid(
+        self,
+        runner: CliRunner,
+        block_cli_configure_loggers: mock.Mock,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        @app.command("noop")
+        def noop():
+            pass
+
+        result = runner.invoke(app, ["--log-handler", "foo", "--log-handler", "bar", "noop"])
+        assert result.exit_code == 2
+
+        output = clean_typer_text(result.output)
+        assert "Invalid value for '--log-handler'" in output
+        assert "Invalid handler: '['foo', 'bar']'" in output
+
+        block_cli_configure_loggers.assert_not_called()

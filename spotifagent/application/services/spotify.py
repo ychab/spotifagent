@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from typing import Any
 from typing import Literal
@@ -17,6 +18,8 @@ from spotifagent.domain.ports.clients.spotify import SpotifyClientPort
 from spotifagent.domain.ports.repositories.spotify import SpotifyAccountRepositoryPort
 
 TimeRange = Literal["short_term", "medium_term", "long_term"]
+
+logger = logging.getLogger(__name__)
 
 
 class SpotifySessionFactory:
@@ -115,7 +118,10 @@ class SpotifyUserSession:
         items: list[MusicItemType] = []
 
         offset: int = 0
+        logger.info(f"Start fetch {endpoint} pages")
         while True:
+            logger.info(f"... processing {offset}/{offset + limit} ...")
+
             data = await self._execute_request(
                 method="GET",
                 endpoint=endpoint,
