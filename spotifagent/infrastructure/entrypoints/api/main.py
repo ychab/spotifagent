@@ -20,7 +20,7 @@ from spotifagent.infrastructure.entrypoints.api.v1.endpoints.users import router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     # Only load configuration loggers at bootstrap, not at import (testing conflicts).
-    configure_loggers(level=app_settings.LOG_LEVEL, handlers=app_settings.LOG_HANDLERS)
+    configure_loggers(level=app_settings.LOG_LEVEL_API, handlers=app_settings.LOG_HANDLERS_API)
     yield
 
 

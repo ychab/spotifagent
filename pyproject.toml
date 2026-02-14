@@ -130,8 +130,11 @@ pythonpath = ["."]
 env = [
     # App required settings
     'SPOTIFAGENT_SECRET_KEY=Vp8W9UnJLtCrOPnLiUrPeAs2y10PwYPv',
-    'SPOTIFAGENT_LOG_LEVEL=DEBUG',
-    'SPOTIFAGENT_LOG_HANDLERS=["null"]',
+    # App settings optional but just in case (fixture override)
+    'SPOTIFAGENT_LOG_LEVEL_API=DEBUG',
+    'SPOTIFAGENT_LOG_LEVEL_CLI=DEBUG',
+    'SPOTIFAGENT_LOG_HANDLERS_API=["null"]',
+    'SPOTIFAGENT_LOG_HANDLERS_CLI=["null"]',
     # Database required settings (could be overriden)
     'D:DATABASE_HOST=127.0.0.1',
     'D:DATABASE_PORT=5432',

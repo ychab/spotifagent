@@ -27,8 +27,11 @@ class AppSettings(BaseSettings):
     ACCESS_TOKEN_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    LOG_LEVEL: LogLevel = "INFO"
-    LOG_HANDLERS: list[LogHandler] = ["console"]
+    LOG_LEVEL_API: LogLevel = "WARNING"
+    LOG_HANDLERS_API: list[LogHandler] = ["console"]
+
+    LOG_LEVEL_CLI: LogLevel = "WARNING"
+    LOG_HANDLERS_CLI: list[LogHandler] = ["cli", "cli_alert"]
 
 
 app_settings = AppSettings()

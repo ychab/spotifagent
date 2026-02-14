@@ -30,15 +30,15 @@ def version_callback(show_version: bool) -> None:
 @app.callback()
 def main(
     log_level: LogLevel = typer.Option(
-        app_settings.LOG_LEVEL,
+        app_settings.LOG_LEVEL_CLI,
         "--log-level",
         "-l",
         case_sensitive=False,
         help="Set the logging level.",
     ),
     log_handlers: list[str] = typer.Option(
-        ["cli", "cli_alert"],
-        "--log-handler",
+        app_settings.LOG_HANDLERS_CLI,
+        "--log-handlers",
         case_sensitive=True,
         callback=parse_log_handlers,
         help="Set the logging handlers.",

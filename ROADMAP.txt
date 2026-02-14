@@ -6,8 +6,13 @@ This quick and dirty document just list the roadmap tasks.
 
 - replace spotifagent occurrences almost everywhere...
 
+## Logging
+
+- Review to improve it! We have almost nothing!
+
 ## Sync
 
+- review it for a top level batch handling (to release memory)
 - spotify: fetch user songs (liked song)
 - spotify: fetch all playlists to collect all the user's song (to don't get recommendations for them)
 

@@ -120,8 +120,6 @@ class SpotifyUserSession:
         offset: int = 0
         logger.info(f"Start fetch {endpoint} pages")
         while True:
-            logger.info(f"... processing {offset}/{offset + limit} ...")
-
             data = await self._execute_request(
                 method="GET",
                 endpoint=endpoint,
@@ -132,9 +130,11 @@ class SpotifyUserSession:
                 },
             )
             page = paginator_model.model_validate(data)
+            logger.info(f"... processed {offset + limit}/{page.total} ...")
 
             items += [validator(item, offset + i + 1) for i, item in enumerate(page.items)]
             if len(items) >= page.total or len(page.items) < limit:
+                logger.info("... finished ...")
                 break
 
             offset += limit

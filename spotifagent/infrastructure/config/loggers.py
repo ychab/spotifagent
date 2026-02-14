@@ -20,6 +20,11 @@ default_conf: Final[dict[str, Any]] = {
             "format": "%(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
+        "rich": {
+            # RichHandler ignores the 'format' string usually, but 'datefmt' works
+            "format": "%(message)s",
+            "datefmt": "[%X]",
+        },
     },
     "handlers": {
         "console": {
@@ -39,6 +44,17 @@ default_conf: Final[dict[str, Any]] = {
             "level": "WARNING",
             "formatter": "default",
             "stream": "ext://sys.stdout",
+        },
+        "rich": {
+            "class": "rich.logging.RichHandler",
+            "formatter": "rich",
+            "level": "NOTSET",
+            # Optional Rich settings
+            "markup": True,
+            "rich_tracebacks": True,
+            "show_level": True,
+            "show_path": True,
+            "show_time": True,
         },
         "null": {
             "class": "logging.NullHandler",

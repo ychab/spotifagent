@@ -1,3 +1,4 @@
+from typing import get_args
 from unittest import mock
 
 import pytest
@@ -5,6 +6,7 @@ from typer.testing import CliRunner
 
 from spotifagent import __version__
 from spotifagent.infrastructure.entrypoints.cli.main import app
+from spotifagent.infrastructure.types import LogLevel
 
 from tests.unit.infrastructure.entrypoints.cli.conftest import TextCleaner
 
@@ -19,7 +21,8 @@ class TestBaseCommand:
 
         block_cli_configure_loggers.assert_not_called()
 
-    def test__log_level(self, runner: CliRunner, block_cli_configure_loggers: mock.Mock) -> None:
+    @pytest.mark.parametrize("log_level", get_args(LogLevel))
+    def test__log_level(self, runner: CliRunner, block_cli_configure_loggers: mock.Mock, log_level: str) -> None:
         @app.command("noop")
         def noop():
             pass
@@ -37,7 +40,7 @@ class TestBaseCommand:
         def noop():
             pass
 
-        result = runner.invoke(app, ["--log-handler", "console", "--log-handler", "null", "noop"])
+        result = runner.invoke(app, ["--log-handlers", "console", "--log-handlers", "null", "noop"])
         assert result.exit_code == 0
 
         block_cli_configure_loggers.assert_called_once_with(
@@ -55,11 +58,11 @@ class TestBaseCommand:
         def noop():
             pass
 
-        result = runner.invoke(app, ["--log-handler", "foo", "--log-handler", "bar", "noop"])
+        result = runner.invoke(app, ["--log-handlers", "foo", "--log-handlers", "bar", "noop"])
         assert result.exit_code == 2
 
         output = clean_typer_text(result.output)
-        assert "Invalid value for '--log-handler'" in output
+        assert "Invalid value for '--log-handlers'" in output
         assert "Invalid handler: '['foo', 'bar']'" in output
 
         block_cli_configure_loggers.assert_not_called()
