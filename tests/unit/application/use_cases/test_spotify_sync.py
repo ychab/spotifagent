@@ -106,15 +106,18 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                purge_artists=True,
+                purge_artist_top=True,
             )
 
         assert report == SyncReport(errors=["An error occurred while purging your artists."])
         assert f"An error occurred while purging artists for user {user.email}" in caplog.text
 
+    @pytest.mark.parametrize(("purge_track_top", "purge_track_saved"), [(True, True), (True, False), (False, True)])
     async def test__purge__track__exception(
         self,
         user: User,
+        purge_track_top: bool,
+        purge_track_saved: bool,
         mock_spotify_session_factory: mock.Mock,
         mock_artist_repository: mock.AsyncMock,
         mock_track_repository: mock.AsyncMock,
@@ -128,7 +131,8 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                purge_tracks=True,
+                purge_track_top=purge_track_top,
+                purge_track_saved=purge_track_saved,
             )
 
         assert report == SyncReport(errors=["An error occurred while purging your tracks."])
@@ -174,7 +178,7 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                sync_artists=True,
+                sync_artist_top=True,
             )
 
         assert report == SyncReport(errors=["An error occurred while fetching Spotify artists."])
@@ -199,14 +203,14 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                sync_artists=True,
+                sync_artist_top=True,
             )
 
         assert report == SyncReport(errors=["An error occurred while saving Spotify artists."])
         assert f"An error occurred while upserting artists for user {user.email}" in caplog.text
 
     @pytest.mark.parametrize("exception_raised", [HTTPError("Boom"), validation_error()])
-    async def test__track__fetch__exception(
+    async def test__track_top__fetch__exception(
         self,
         user: User,
         mock_spotify_session_factory: mock.Mock,
@@ -224,14 +228,14 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                sync_tracks=True,
+                sync_track_top=True,
             )
 
-        assert report == SyncReport(errors=["An error occurred while fetching Spotify tracks."])
-        assert f"An error occurred while fetching tracks for user {user.email}" in caplog.text
+        assert report == SyncReport(errors=["An error occurred while fetching Spotify top tracks."])
+        assert f"An error occurred while fetching top tracks for user {user.email}" in caplog.text
 
     @pytest.mark.parametrize("exception_raised", [SQLAlchemyError("Boom"), validation_error()])
-    async def test__track__bulk_upsert__exception(
+    async def test__track_top__bulk_upsert__exception(
         self,
         user: User,
         mock_spotify_session_factory: mock.Mock,
@@ -249,8 +253,58 @@ class TestSpotifySync:
                 spotify_session_factory=mock_spotify_session_factory,
                 artist_repository=mock_artist_repository,
                 track_repository=mock_track_repository,
-                sync_tracks=True,
+                sync_track_top=True,
             )
 
-        assert report == SyncReport(errors=["An error occurred while saving Spotify tracks."])
-        assert f"An error occurred while upserting tracks for user {user.email}" in caplog.text
+        assert report == SyncReport(errors=["An error occurred while saving Spotify top tracks."])
+        assert f"An error occurred while upserting top tracks for user {user.email}" in caplog.text
+
+    @pytest.mark.parametrize("exception_raised", [HTTPError("Boom"), validation_error()])
+    async def test__track_saved__fetch__exception(
+        self,
+        user: User,
+        mock_spotify_session_factory: mock.Mock,
+        mock_spotify_session: mock.Mock,
+        mock_artist_repository: mock.AsyncMock,
+        mock_track_repository: mock.AsyncMock,
+        exception_raised: Exception,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_spotify_session.get_saved_tracks.side_effect = exception_raised
+
+        with caplog.at_level(logging.ERROR):
+            report = await spotify_sync(
+                user=user,
+                spotify_session_factory=mock_spotify_session_factory,
+                artist_repository=mock_artist_repository,
+                track_repository=mock_track_repository,
+                sync_track_saved=True,
+            )
+
+        assert report == SyncReport(errors=["An error occurred while fetching Spotify saved tracks."])
+        assert f"An error occurred while fetching saved tracks for user {user.email}" in caplog.text
+
+    @pytest.mark.parametrize("exception_raised", [SQLAlchemyError("Boom"), validation_error()])
+    async def test__track_saved__bulk_upsert__exception(
+        self,
+        user: User,
+        mock_spotify_session_factory: mock.Mock,
+        mock_spotify_session: mock.Mock,
+        mock_artist_repository: mock.AsyncMock,
+        mock_track_repository: mock.AsyncMock,
+        exception_raised: Exception,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_track_repository.bulk_upsert.side_effect = exception_raised
+
+        with caplog.at_level(logging.ERROR):
+            report = await spotify_sync(
+                user=user,
+                spotify_session_factory=mock_spotify_session_factory,
+                artist_repository=mock_artist_repository,
+                track_repository=mock_track_repository,
+                sync_track_saved=True,
+            )
+
+        assert report == SyncReport(errors=["An error occurred while saving Spotify saved tracks."])
+        assert f"An error occurred while upserting saved tracks for user {user.email}" in caplog.text
