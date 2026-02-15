@@ -10,7 +10,6 @@ from spotifagent.domain.entities.spotify import SpotifyArtist
 from spotifagent.domain.entities.spotify import SpotifyItem
 from spotifagent.domain.entities.spotify import SpotifyPage
 from spotifagent.domain.entities.spotify import SpotifyTopArtistPage
-from spotifagent.domain.entities.spotify import SpotifyTopPage
 from spotifagent.domain.entities.spotify import SpotifyTopTrackPage
 from spotifagent.domain.entities.spotify import SpotifyTrack
 from spotifagent.domain.entities.users import User
@@ -88,24 +87,24 @@ class SpotifyUserSession:
 
     async def get_top_artists(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Artist]:
         return await self._fetch_paged_top_items(
-            endpoint="/me/top/artists",
             page_model=SpotifyTopArtistPage,
             dto_callback=self._map_top_artist,
+            endpoint="/me/top/artists",
             limit=limit,
             time_range=time_range,
         )
 
     async def get_top_tracks(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Track]:
         return await self._fetch_paged_top_items(
-            endpoint="/me/top/tracks",
             page_model=SpotifyTopTrackPage,
             dto_callback=self._map_top_track,
+            endpoint="/me/top/tracks",
             limit=limit,
             time_range=time_range,
         )
 
     async def _fetch_paged_top_items[
-        SpotifyTopPageType: SpotifyTopPage,
+        SpotifyPageType: SpotifyPage,
         SpotifyItemType: SpotifyItem,
         MusicItemType: BaseMusicItem,
     ](
@@ -113,7 +112,7 @@ class SpotifyUserSession:
         endpoint: str,
         limit: int,
         time_range: TimeRange,
-        page_model: type[SpotifyTopPageType],
+        page_model: type[SpotifyPageType],
         dto_callback: Callable[[SpotifyItemType, int], MusicItemType],
     ) -> list[MusicItemType]:
         return await self._fetch_pages(
@@ -156,7 +155,7 @@ class SpotifyUserSession:
             page = page_model.model_validate(data)
             logger.info(f"... processed {offset + limit}/{page.total} ...")
 
-            if isinstance(page, SpotifyTopPage):
+            if isinstance(page, (SpotifyTopArtistPage, SpotifyTopTrackPage)):
                 items += [dto_callback(item, offset + i + 1) for i, item in enumerate(page.items)]
             else:
                 items += [dto_callback(item) for item in [i.item for i in page.items]]

@@ -139,22 +139,17 @@ class SpotifyAccountUpdate(BaseEntity):
         return self
 
 
+class SpotifyTrackArtist(BaseModel):
+    id: str
+    name: str
+
+
 class SpotifyItem(BaseModel):
     id: str
     name: str
     href: HttpUrl
 
     popularity: int
-
-
-class SpotifyItemMeta[T: SpotifyItem](BaseModel):
-    added_at: AwareDatetime | None = None
-    item: T
-
-
-class SpotifyTrackArtist(BaseModel):
-    id: str
-    name: str
 
 
 class SpotifyArtist(SpotifyItem):
@@ -165,25 +160,14 @@ class SpotifyTrack(SpotifyItem):
     artists: list[SpotifyTrackArtist]
 
 
-class SpotifyPage[T: SpotifyItem | SpotifyItemMeta](BaseModel):
+class SpotifyPage[T: SpotifyItem](BaseModel):
     items: Sequence[T]
     total: Annotated[int, Field(ge=0)]
     limit: Annotated[int, Field(ge=1)]
     offset: Annotated[int, Field(ge=0)]
 
 
-class SpotifyTopPage[T: SpotifyItem](SpotifyPage[T]):
-    items: Sequence[T]
+class SpotifyTopArtistPage(SpotifyPage[SpotifyArtist]): ...
 
 
-class SpotifyMetaPage[T: SpotifyItem](SpotifyPage[SpotifyItemMeta[T]]):
-    items: Sequence[SpotifyItemMeta[T]]
-
-
-class SpotifySavedTrackPage(SpotifyMetaPage[SpotifyTrack]): ...
-
-
-class SpotifyTopArtistPage(SpotifyTopPage[SpotifyArtist]): ...
-
-
-class SpotifyTopTrackPage(SpotifyTopPage[SpotifyTrack]): ...
+class SpotifyTopTrackPage(SpotifyPage[SpotifyTrack]): ...
