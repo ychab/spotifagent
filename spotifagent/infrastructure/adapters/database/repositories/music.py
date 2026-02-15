@@ -2,6 +2,7 @@ import uuid
 from typing import Any
 
 from sqlalchemy import delete
+from sqlalchemy import or_
 from sqlalchemy import select
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -81,8 +82,16 @@ class TrackRepository(TrackRepositoryPort):
             batch_size=batch_size,
         )
 
-    async def purge(self, user_id: uuid.UUID) -> int:
-        stmt = delete(TrackModel).where(TrackModel.user_id == user_id)
+    async def purge(self, user_id: uuid.UUID, is_top: bool = False, is_saved: bool = False) -> int:
+        conditions = [TrackModel.user_id == user_id]
+        if is_top and is_saved:
+            conditions.append(or_(TrackModel.is_top.is_(True), TrackModel.is_saved.is_(True)))
+        elif is_top:
+            conditions.append(TrackModel.is_top.is_(True))
+        elif is_saved:
+            conditions.append(TrackModel.is_saved.is_(True))
+
+        stmt = delete(TrackModel).where(*conditions)
         result = await self.session.execute(stmt)
         return int(result.rowcount)  # type: ignore
 
