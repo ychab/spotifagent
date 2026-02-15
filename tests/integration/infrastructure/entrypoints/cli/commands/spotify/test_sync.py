@@ -20,17 +20,24 @@ class TestSpotifySyncLogic:
         with mock.patch(target_path, new_callable=mock.AsyncMock) as patched:
             yield patched
 
-    async def test__nominal(
+    async def test__artist_top__nominal(
         self,
         user: User,
         mock_spotify_sync: mock.AsyncMock,
         capsys: pytest.CaptureFixture,
     ) -> None:
-        mock_spotify_sync.return_value = SyncReport(artist_created=100, artist_updated=250)
+        mock_spotify_sync.return_value = SyncReport(
+            artist_created=100,
+            artist_updated=250,
+            track_created=100,
+            track_updated=250,
+        )
 
-        await sync_logic(user.email, sync_artists=True)
+        await sync_logic(user.email, sync_artist_top=True, sync_track_top=True, sync_track_saved=True)
 
         captured = capsys.readouterr()
         assert "Synchronization successful!" in captured.out
         assert "- 100 artists created" in captured.out
         assert "- 250 artists updated" in captured.out
+        assert "- 100 tracks created" in captured.out
+        assert "- 250 tracks updated" in captured.out

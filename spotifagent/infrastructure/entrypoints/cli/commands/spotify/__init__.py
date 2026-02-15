@@ -32,25 +32,35 @@ def connect(  # pragma: no cover
 @app.command("sync", help="Synchronize the Spotify user's items.")
 def sync(  # pragma: no cover
     email: str = typer.Option(..., help="User email address", parser=parse_email),
-    purge_artists: bool = typer.Option(
+    purge_artist_top: bool = typer.Option(
         False,
-        "--purge-artists/--no-purge-artists",
-        help="Whether to purge user's artists",
+        "--purge-artist-top/--no-purge-artist-top",
+        help="Whether to purge user's top artists",
     ),
-    purge_tracks: bool = typer.Option(
+    purge_track_top: bool = typer.Option(
         False,
-        "--purge-tracks/--no-purge-tracks",
-        help="Whether to purge user's tracks",
+        "--purge-track-top/--no-purge-track-top",
+        help="Whether to purge user's top tracks",
     ),
-    sync_artists: bool = typer.Option(
-        True,
-        "--sync-artists/--no-sync-artists",
-        help="Whether to sync user's artists",
+    purge_track_saved: bool = typer.Option(
+        False,
+        "--purge-track-saved/--no-purge-track-saved",
+        help="Whether to purge user's saved tracks",
     ),
-    sync_tracks: bool = typer.Option(
+    sync_artist_top: bool = typer.Option(
         True,
-        "--sync-tracks/--no-sync-tracks",
-        help="Whether to sync user's tracks",
+        "--sync-artist-top/--no-sync-artist-top",
+        help="Whether to sync user's top artists",
+    ),
+    sync_track_top: bool = typer.Option(
+        True,
+        "--sync-track-top/--no-sync-track-top",
+        help="Whether to sync user's top tracks",
+    ),
+    sync_track_saved: bool = typer.Option(
+        True,
+        "--sync-track-saved/--no-sync-track-saved",
+        help="Whether to sync user's saved tracks",
     ),
     page_limit: int = typer.Option(
         50,
@@ -62,7 +72,7 @@ def sync(  # pragma: no cover
     time_range: TimeRange = typer.Option(
         "long_term",
         "--time-range",
-        help="The time range of the items to fetch",
+        help="The time range of the items to fetch (top artist and top tracks)",
     ),
     batch_size: int = typer.Option(
         300,
@@ -79,10 +89,12 @@ def sync(  # pragma: no cover
         asyncio.run(
             sync_logic(
                 email=email,
-                purge_artists=purge_artists,
-                purge_tracks=purge_tracks,
-                sync_artists=sync_artists,
-                sync_tracks=sync_tracks,
+                purge_artist_top=purge_artist_top,
+                purge_track_top=purge_track_top,
+                purge_track_saved=purge_track_saved,
+                sync_artist_top=sync_artist_top,
+                sync_track_top=sync_track_top,
+                sync_track_saved=sync_track_saved,
                 page_limit=page_limit,
                 time_range=time_range,
                 batch_size=batch_size,
