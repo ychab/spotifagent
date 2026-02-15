@@ -2,6 +2,17 @@
 
 This quick and dirty document just list the roadmap tasks.
 
+## Tests
+
+- add warning log enabled for deprecated features?
+
+## Entities
+
+### Music
+
+- should we add a relationship between the track with the (top) artist?
+
+
 ## Renaming project
 
 - replace spotifagent occurrences almost everywhere...

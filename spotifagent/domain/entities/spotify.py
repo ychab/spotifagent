@@ -160,11 +160,20 @@ class SpotifyTrack(SpotifyItem):
     artists: list[SpotifyTrackArtist]
 
 
-class SpotifyPage[T: SpotifyItem](BaseModel):
+class SpotifySavedTrack(BaseModel):
+    added_at: AwareDatetime | None = None
+    track: SpotifyTrack
+
+
+class SpotifyPage[T: SpotifyItem | SpotifySavedTrack](BaseModel):
     items: Sequence[T]
     total: Annotated[int, Field(ge=0)]
     limit: Annotated[int, Field(ge=1)]
     offset: Annotated[int, Field(ge=0)]
+
+
+class SpotifySavedTrackPage(SpotifyPage[SpotifySavedTrack]):
+    items: Sequence[SpotifySavedTrack]
 
 
 class SpotifyTopArtistPage(SpotifyPage[SpotifyArtist]): ...

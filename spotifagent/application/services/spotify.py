@@ -9,6 +9,7 @@ from spotifagent.domain.entities.music import Track
 from spotifagent.domain.entities.spotify import SpotifyArtist
 from spotifagent.domain.entities.spotify import SpotifyItem
 from spotifagent.domain.entities.spotify import SpotifyPage
+from spotifagent.domain.entities.spotify import SpotifySavedTrackPage
 from spotifagent.domain.entities.spotify import SpotifyTopArtistPage
 from spotifagent.domain.entities.spotify import SpotifyTopTrackPage
 from spotifagent.domain.entities.spotify import SpotifyTrack
@@ -103,6 +104,15 @@ class SpotifyUserSession:
             time_range=time_range,
         )
 
+    async def get_saved_tracks(self, limit: int = 50) -> list[Track]:
+        return await self._fetch_pages(
+            page_model=SpotifySavedTrackPage,
+            dto_callback=self._map_saved_track,
+            endpoint="/me/tracks",
+            method="GET",
+            limit=limit,
+        )
+
     async def _fetch_paged_top_items[
         SpotifyPageType: SpotifyPage,
         SpotifyItemType: SpotifyItem,
@@ -155,10 +165,10 @@ class SpotifyUserSession:
             page = page_model.model_validate(data)
             logger.info(f"... processed {offset + limit}/{page.total} ...")
 
-            if isinstance(page, (SpotifyTopArtistPage, SpotifyTopTrackPage)):
-                items += [dto_callback(item, offset + i + 1) for i, item in enumerate(page.items)]
+            if isinstance(page, SpotifySavedTrackPage):
+                items += [dto_callback(item.track) for item in page.items]
             else:
-                items += [dto_callback(item) for item in [i.item for i in page.items]]
+                items += [dto_callback(item, offset + i + 1) for i, item in enumerate(page.items)]
 
             if len(items) >= page.total or len(page.items) < limit:
                 logger.info("... finished ...")
@@ -181,6 +191,9 @@ class SpotifyUserSession:
 
     def _map_top_track(self, item: SpotifyTrack, position: int) -> Track:
         return self._map_track(item, is_top=True, top_position=position)
+
+    def _map_saved_track(self, item: SpotifyTrack) -> Track:
+        return self._map_track(item, is_saved=True)
 
     def _map_track(self, item: SpotifyTrack, **extra_attributes: Any) -> Track:
         return Track.model_validate(

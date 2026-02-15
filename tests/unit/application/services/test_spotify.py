@@ -207,3 +207,41 @@ class TestSpotifyUserSession:
         assert top_track_last.artists[0].name == "SCH"
         assert top_track_last.provider == MusicProvider.SPOTIFY
         assert top_track_last.provider_id == "03LDM6VoTJbfdw1L7USDU8"
+
+    @pytest.mark.parametrize("spotify_response", ["saved_tracks"], indirect=["spotify_response"])
+    async def test__get_saved_tracks__nominal(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        page_limit: int,
+    ) -> None:
+        tracks_saved = await spotify_user_session.get_saved_tracks(limit=page_limit)
+        assert len(tracks_saved) == 20
+
+        track_saved_first = tracks_saved[0]
+        assert track_saved_first.id is not None
+        assert track_saved_first.user_id == spotify_user_session.user.id
+        assert track_saved_first.name == "Honey"
+        assert track_saved_first.popularity == 48
+        assert track_saved_first.is_saved is True
+        assert track_saved_first.is_top is False
+        assert track_saved_first.top_position is None
+        assert len(track_saved_first.artists) == 1
+        assert track_saved_first.artists[0].provider_id == "54kCbQZaZWHnwwj9VP2hn4"
+        assert track_saved_first.artists[0].name == "Zola"
+        assert track_saved_first.provider == MusicProvider.SPOTIFY
+        assert track_saved_first.provider_id == "5GZPHysxDmjSAtXN87D78S"
+
+        track_saved_last = tracks_saved[-1]
+        assert track_saved_last.id is not None
+        assert track_saved_last.user_id == spotify_user_session.user.id
+        assert track_saved_last.name == "Magnum"
+        assert track_saved_last.popularity == 36
+        assert track_saved_last.is_saved is True
+        assert track_saved_last.is_top is False
+        assert track_saved_last.top_position is None
+        assert len(track_saved_last.artists) == 1
+        assert track_saved_last.artists[0].provider_id == "2kXKa3aAFngGz2P4GjG5w2"
+        assert track_saved_last.artists[0].name == "SCH"
+        assert track_saved_last.provider == MusicProvider.SPOTIFY
+        assert track_saved_last.provider_id == "4nKcfnZ2Qj5urw0ekrnF2M"
