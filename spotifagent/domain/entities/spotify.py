@@ -64,8 +64,6 @@ class SpotifyScope(StrEnum):
             cls.USER_TOP_READ,
             cls.USER_LIBRARY_READ,
             cls.PLAYLIST_READ_PRIVATE,
-            cls.PLAYLIST_MODIFY_PUBLIC,
-            cls.PLAYLIST_MODIFY_PRIVATE,
         ]
 
     @classmethod
@@ -152,14 +150,18 @@ class SpotifyItem(BaseModel):
     name: str
     href: HttpUrl
 
-    popularity: int
+
+class SpotifyPlaylist(SpotifyItem):
+    pass
 
 
 class SpotifyArtist(SpotifyItem):
+    popularity: int
     genres: list[str]
 
 
 class SpotifyTrack(SpotifyItem):
+    popularity: int
     artists: list[SpotifyTrackArtist]
 
 
@@ -168,15 +170,24 @@ class SpotifySavedTrack(BaseModel):
     track: SpotifyTrack
 
 
-class SpotifyPage[T: SpotifyItem | SpotifySavedTrack](BaseModel):
+class SpotifyPlaylistTrack(BaseModel):
+    item: SpotifyTrack
+
+
+class SpotifyPage[T: SpotifyItem | SpotifySavedTrack | SpotifyPlaylistTrack](BaseModel):
     items: Sequence[T]
     total: Annotated[int, Field(ge=0)]
-    limit: Annotated[int, Field(ge=1)]
+    limit: Annotated[int, Field(ge=0)]
     offset: Annotated[int, Field(ge=0)]
 
 
-class SpotifySavedTrackPage(SpotifyPage[SpotifySavedTrack]):
-    items: Sequence[SpotifySavedTrack]
+class SpotifyPlaylistPage(SpotifyPage[SpotifyPlaylist]): ...
+
+
+class SpotifySavedTrackPage(SpotifyPage[SpotifySavedTrack]): ...
+
+
+class SpotifyPlaylistTrackPage(SpotifyPage[SpotifyPlaylistTrack]): ...
 
 
 class SpotifyTopArtistPage(SpotifyPage[SpotifyArtist]): ...

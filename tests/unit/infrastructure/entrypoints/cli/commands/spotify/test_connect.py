@@ -4,17 +4,17 @@ from typing import Final
 from unittest import mock
 
 import pytest
-import typer
 from typer.testing import CliRunner
 
 from spotifagent.domain.entities.users import User
+from spotifagent.domain.exceptions import UserNotFound
 from spotifagent.infrastructure.entrypoints.cli.commands.spotify import connect_logic
 from spotifagent.infrastructure.entrypoints.cli.main import app
 
 from tests.unit.infrastructure.entrypoints.cli.conftest import TextCleaner
 
 
-class TestSpotifyConnectCommand:
+class TestSpotifyConnectParserCommand:
     @pytest.fixture(autouse=True)
     def mock_connect_logic(self) -> Iterable[mock.AsyncMock]:
         target_path = "spotifagent.infrastructure.entrypoints.cli.commands.spotify.connect_logic"
@@ -108,29 +108,82 @@ class TestSpotifyConnectCommand:
         assert expected_msg in output
 
 
+class TestSpotifyConnectCommand:
+    @pytest.fixture(autouse=True)
+    def mock_connect_logic(self) -> Iterable[mock.AsyncMock]:
+        target_path = "spotifagent.infrastructure.entrypoints.cli.commands.spotify.connect_logic"
+        with mock.patch(target_path, new_callable=mock.AsyncMock) as patched:
+            yield patched
+
+    def test__nominal(
+        self,
+        mock_connect_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        result = runner.invoke(app, ["spotify", "connect", "--email", "test@example.com"])
+        assert result.exit_code == 0
+
+        output = clean_typer_text(result.stdout)
+        assert "Authentication successful!" in output
+
+    def test__user_not_found(
+        self,
+        mock_connect_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        mock_connect_logic.side_effect = UserNotFound()
+
+        result = runner.invoke(app, ["spotify", "connect", "--email", "test@example.com"])
+        assert result.exit_code != 0
+
+        output = clean_typer_text(result.stderr)
+        assert "User not found with email: test@example.com" in output
+
+    def test__timeout__exceed(
+        self,
+        mock_connect_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        mock_connect_logic.side_effect = TimeoutError()
+
+        result = runner.invoke(app, ["spotify", "connect", "--email", "test@example.com", "--timeout", "10"])
+        assert result.exit_code != 0
+
+        output = clean_typer_text(result.stderr)
+        assert "Unable to connect after 10.0 seconds. Did you open your browser and accept?" in output
+
+    def test__exception(
+        self,
+        mock_connect_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        mock_connect_logic.side_effect = Exception("Boom")
+
+        result = runner.invoke(app, ["spotify", "connect", "--email", "test@example.com"])
+        assert result.exit_code != 0
+
+        output = clean_typer_text(result.stderr)
+        assert "Error: Boom" in output
+
+
 @pytest.mark.usefixtures("mock_get_db", "mock_user_repository", "mock_spotify_client")
 class TestSpotifyConnectLogic:
     TARGET_PATH: Final[str] = "spotifagent.infrastructure.entrypoints.cli.commands.spotify.connect"
-
-    @pytest.fixture
-    def mock_spotify_oauth_redirect(self) -> Iterable[mock.AsyncMock]:
-        with mock.patch(f"{self.TARGET_PATH}.spotify_oauth_redirect", new_callable=mock.AsyncMock) as patched:
-            yield patched
 
     @pytest.fixture(autouse=True)
     def mock_typer_launch(self) -> Iterable[mock.Mock]:
         with mock.patch(f"{self.TARGET_PATH}.typer.launch") as patched:
             yield patched
 
-    async def test__user_not_found(
-        self,
-        mock_user_repository: mock.AsyncMock,
-        mock_spotify_oauth_redirect: mock.AsyncMock,
-    ) -> None:
+    async def test__user_not_found(self, mock_user_repository: mock.AsyncMock) -> None:
         mock_user_repository.get_by_email.return_value = None
 
         email = "test@example.com"
-        with pytest.raises(typer.BadParameter, match=f"User not found with email: {email}"):
+        with pytest.raises(UserNotFound):
             await connect_logic(email, 10, 2)
 
     @pytest.mark.parametrize("user", [{"spotify_state": "dummy-token-state"}], indirect=True)
@@ -139,13 +192,10 @@ class TestSpotifyConnectLogic:
         mock_user_repository: mock.AsyncMock,
         mock_spotify_client: mock.Mock,
         user: User,
-        capsys: pytest.CaptureFixture,
     ) -> None:
         mock_user_repository.get_by_email.return_value = user
         mock_spotify_client.get_authorization_url.return_value = "http://example.com", "dummy-token-state"
 
         timeout = 0.1
-        await connect_logic(user.email, timeout=timeout, poll_interval=0.05)
-
-        captured = capsys.readouterr()
-        assert f"Unable to connect after {timeout} seconds" in captured.err
+        with pytest.raises(TimeoutError):
+            await connect_logic(user.email, timeout=timeout, poll_interval=0.05)

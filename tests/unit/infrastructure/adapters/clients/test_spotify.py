@@ -88,7 +88,7 @@ class TestSpotifyClientAdapter:
         }
 
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             match_headers={
                 "Authorization": spotify_client._get_basic_auth_header(),
@@ -137,7 +137,7 @@ class TestSpotifyClientAdapter:
         }
 
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             match_headers={
                 "Authorization": spotify_client._get_basic_auth_header(),
@@ -226,7 +226,7 @@ class TestSpotifyClientAdapter:
             "expires_in": 3600,
         }
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             match_content=urlencode(form_data).encode("utf-8"),
             json=response_json,
@@ -268,7 +268,7 @@ class TestSpotifyClientAdapter:
             "expires_in": 3600,
         }
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             match_content=urlencode(form_data).encode("utf-8"),
             json=response_json_token,

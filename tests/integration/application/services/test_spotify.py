@@ -41,10 +41,19 @@ class TestSpotifyUserSession:
         mock_spotify_client: mock.AsyncMock,
         async_session_db: AsyncSession,
     ) -> None:
+        mock_spotify_client.refresh_access_token.return_value = token_state
         mock_spotify_client.make_user_api_call.return_value = ({"data": "ok"}, token_state)
 
         await spotify_session._execute_request("GET", "/test")
 
+        # Check that token state is refresh in memory.
+        assert spotify_session.user.spotify_account is not None
+        assert spotify_session.user.spotify_account.token_type == token_state.token_type
+        assert spotify_session.user.spotify_account.token_access == token_state.access_token
+        assert spotify_session.user.spotify_account.token_refresh == token_state.refresh_token
+        assert spotify_session.user.spotify_account.token_expires_at == token_state.expires_at
+
+        # Check that token state is refresh in DB.
         stmt = select(UserModel).where(UserModel.email == user.email).options(selectinload(UserModel.spotify_account))
         result = await async_session_db.execute(stmt)
         user_db = result.scalar_one()

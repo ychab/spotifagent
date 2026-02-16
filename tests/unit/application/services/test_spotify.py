@@ -1,5 +1,7 @@
+import asyncio
 import copy
 import json
+import logging
 from typing import Any
 from unittest import mock
 
@@ -12,10 +14,34 @@ from spotifagent.domain.entities.spotify import SpotifyAccountUpdate
 from spotifagent.domain.entities.spotify import SpotifyTokenState
 from spotifagent.domain.entities.users import User
 from spotifagent.domain.exceptions import SpotifyAccountNotFoundError
+from spotifagent.infrastructure.config.settings.app import app_settings
 
 from tests import ASSETS_DIR
 from tests.unit.factories.spotify import SpotifyTokenStateFactory
 from tests.unit.factories.users import UserFactory
+
+
+def paginate_response(
+    token_state: SpotifyTokenState,
+    response: dict[str, Any],
+    total: int,
+    limit: int,
+    offset: int = 0,
+    size: int | None = None,
+) -> list[tuple[dict[str, Any], SpotifyTokenState]]:
+    side_effects = []
+
+    while offset + limit <= (size or total):
+        response_chunk = copy.deepcopy(response)
+        response_chunk["offset"] = offset
+        response_chunk["limit"] = limit
+        response_chunk["total"] = total
+        response_chunk["items"] = response_chunk["items"][offset : offset + limit]
+
+        side_effects += [(response_chunk, token_state)]
+        offset += limit
+
+    return side_effects
 
 
 class TestSpotifySessionFactory:
@@ -56,9 +82,16 @@ class TestSpotifyUserSession:
         return UserFactory.build(with_spotify_account=True)
 
     @pytest.fixture
+    def patch_max_concurrency(self, monkeypatch: pytest.MonkeyPatch) -> int:
+        max_concurrency: int = 10
+        monkeypatch.setattr(app_settings, "SYNC_SEMAPHORE_MAX_CONCURRENCY", max_concurrency)
+        return max_concurrency
+
+    @pytest.fixture
     def spotify_user_session(
         self,
         user: User,
+        patch_max_concurrency: int,
         mock_spotify_account_repository: mock.AsyncMock,
         mock_spotify_client: mock.AsyncMock,
     ) -> SpotifyUserSession:
@@ -66,6 +99,7 @@ class TestSpotifyUserSession:
             user=user,
             spotify_account_repository=mock_spotify_account_repository,
             spotify_client=mock_spotify_client,
+            max_concurrency=patch_max_concurrency,
         )
 
     @pytest.fixture
@@ -74,42 +108,115 @@ class TestSpotifyUserSession:
         filepath = ASSETS_DIR / "httpmock" / "spotify" / f"{filename}.json"
         return json.loads(filepath.read_text())
 
-    @pytest.fixture(name="page_limit")
-    def patch_spotify_response_paginated(
+    @pytest.fixture
+    def spotify_response_pages(
         self,
+        request: pytest.FixtureRequest,
         spotify_response: dict[str, Any],
         token_state: SpotifyTokenState,
         mock_spotify_client: mock.AsyncMock,
-    ) -> int:
-        side_effects = []
+    ) -> tuple[int, int]:
+        params = getattr(request, "param", {})
+        total: int = params.get("total", 20)
+        limit: int = params.get("limit", 5)
 
-        total: int = 20
+        mock_spotify_client.make_user_api_call.side_effect = paginate_response(
+            token_state=token_state,
+            response=spotify_response,
+            total=total,
+            limit=limit,
+        )
+
+        return total, limit
+
+    @pytest.fixture
+    def spotify_response_playlist_items_pages(
+        self,
+        request: pytest.FixtureRequest,
+        spotify_response_pages: tuple[int, int],
+        token_state: SpotifyTokenState,
+        mock_spotify_client: mock.AsyncMock,
+    ) -> tuple[int, int]:
+        side_effects = list(mock_spotify_client.make_user_api_call.side_effect)
+
+        params: dict[str, Any] = getattr(request, "param", {})
+        has_duplicates = params.get("has_duplicates", False)
+
+        filepath = ASSETS_DIR / "httpmock" / "spotify" / "playlist_items.json"
+        spotify_response = json.loads(filepath.read_text())
+
+        playlist_total = spotify_response_pages[0]
+        playlist_limit = spotify_response_pages[1]
+        total: int = playlist_limit * 3
         offset: int = 0
-        limit: int = 5
-        while offset + limit <= total:
-            response_chunk = copy.deepcopy(spotify_response)
-            response_chunk["offset"] = offset
-            response_chunk["limit"] = limit
-            response_chunk["total"] = total
-            response_chunk["items"] = response_chunk["items"][offset : offset + limit]
+        for _ in range(playlist_total):
+            side_effects += paginate_response(
+                token_state=token_state,
+                response=spotify_response,
+                total=total,
+                limit=playlist_limit,
+                offset=offset,
+                size=total + offset,
+            )
 
-            side_effects += [(response_chunk, token_state)]
-            offset += limit
+            if not has_duplicates:
+                offset += total
 
         mock_spotify_client.make_user_api_call.side_effect = side_effects
-        return limit
+        return total, playlist_limit
 
-    async def test__execute_request__persists_new_token(
+    @pytest.fixture
+    def spotify_response_playlist_items_invalid_pages(
+        self,
+        token_state: SpotifyTokenState,
+        mock_spotify_client: mock.AsyncMock,
+    ) -> None:
+        side_effects = list(mock_spotify_client.make_user_api_call.side_effect)
+
+        side_effects += [
+            (
+                {
+                    "items": [
+                        {
+                            "item": {
+                                "artists": [{"id": None, "name": ""}],
+                                "href": None,
+                                "id": None,
+                                "name": "my-custom-track-which-dont-exists-on-spotify-db",
+                                "popularity": 0,
+                            },
+                        },
+                    ],
+                    "limit": 50,
+                    "offset": 0,
+                    "total": 1,
+                },
+                token_state,
+            ),
+        ]
+        mock_spotify_client.make_user_api_call.side_effect = side_effects
+
+    async def test__execute_request__refreshed_token(
         self,
         spotify_user_session: SpotifyUserSession,
+        user: User,
         token_state: SpotifyTokenState,
         mock_spotify_client: mock.AsyncMock,
         mock_spotify_account_repository: mock.AsyncMock,
     ) -> None:
+        assert user.spotify_account is not None
+
         mock_spotify_client.make_user_api_call.return_value = ({"data": "ok"}, token_state)
 
         await spotify_user_session._execute_request("GET", "/test")
 
+        # Check that token state is refresh in memory.
+        assert user.spotify_account.token_type == token_state.token_type
+        assert user.spotify_account.token_access == token_state.access_token
+        assert user.spotify_account.token_refresh == token_state.refresh_token
+        assert user.spotify_account.token_expires_at == token_state.expires_at
+
+        # Check that token state is refresh in DB.
         mock_spotify_account_repository.update.assert_called_once_with(
             user_id=spotify_user_session.user.id,
             spotify_account_data=SpotifyAccountUpdate(
@@ -120,7 +227,7 @@ class TestSpotifyUserSession:
             ),
         )
 
-    async def test__execute_request__no_persistence_if_unchanged(
+    async def test__execute_request__no_refreshed_token(
         self,
         spotify_user_session: SpotifyUserSession,
         user: User,
@@ -130,20 +237,67 @@ class TestSpotifyUserSession:
         assert user.spotify_account is not None
 
         token_state_unchanged = SpotifyTokenStateFactory.build(access_token=user.spotify_account.token_access)
+        mock_spotify_client.refresh_access_token.return_value = token_state_unchanged
         mock_spotify_client.make_user_api_call.return_value = ({"data": "ok"}, token_state_unchanged)
 
         await spotify_user_session._execute_request("GET", "/test")
 
+        # Check that token state wasn't refreshed in memory.
+        assert user.spotify_account.token_access == token_state_unchanged.access_token
+
+        # Check that DB have not been updated.
         mock_spotify_account_repository.update.assert_not_called()
+
+    async def test__refresh_token__already_refreshed(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        mock_spotify_client: mock.AsyncMock,
+        mock_spotify_account_repository: mock.AsyncMock,
+    ) -> None:
+        spotify_user_session._is_token_refreshed = True
+
+        await spotify_user_session._refresh_token()
+
+        mock_spotify_client.refresh_access_token.assert_not_called()
+        mock_spotify_account_repository.update.assert_not_called()
+
+    async def test__refresh_token__concurrent_calls__executes_once(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        patch_max_concurrency: int,
+        mock_spotify_client: mock.AsyncMock,
+        mock_spotify_account_repository: mock.AsyncMock,
+        token_state: SpotifyTokenState,
+    ) -> None:
+        assert spotify_user_session.user.spotify_account is not None
+
+        new_token_state = SpotifyTokenStateFactory.build()
+
+        async def delayed_refresh(*args, **kwargs):
+            await asyncio.sleep(0.05)  # Simulate network latency
+            return new_token_state
+
+        mock_spotify_client.refresh_access_token.side_effect = delayed_refresh
+
+        # Launch concurrent calls
+        async with asyncio.TaskGroup() as tg:
+            for _ in range(patch_max_concurrency):
+                tg.create_task(spotify_user_session._refresh_token())
+
+        mock_spotify_client.refresh_access_token.assert_called_once()
+        mock_spotify_account_repository.update.assert_called_once()
+
+        assert spotify_user_session._is_token_refreshed is True
+        assert spotify_user_session.user.spotify_account.token_access == new_token_state.access_token
 
     @pytest.mark.parametrize("spotify_response", ["top_artists"], indirect=["spotify_response"])
     async def test__get_top_artists__nominal(
         self,
         spotify_user_session: SpotifyUserSession,
         spotify_response: dict[str, Any],
-        page_limit: int,
+        spotify_response_pages: tuple[int, int],
     ) -> None:
-        top_artists = await spotify_user_session.get_top_artists(limit=page_limit)
+        top_artists = await spotify_user_session.get_top_artists(limit=spotify_response_pages[1])
         assert len(top_artists) == 20
 
         top_artist_first = top_artists[0]
@@ -175,9 +329,9 @@ class TestSpotifyUserSession:
         self,
         spotify_user_session: SpotifyUserSession,
         spotify_response: dict[str, Any],
-        page_limit: int,
+        spotify_response_pages: tuple[int, int],
     ) -> None:
-        top_tracks = await spotify_user_session.get_top_tracks(limit=page_limit)
+        top_tracks = await spotify_user_session.get_top_tracks(limit=spotify_response_pages[1])
         assert len(top_tracks) == 20
 
         top_track_first = top_tracks[0]
@@ -213,9 +367,9 @@ class TestSpotifyUserSession:
         self,
         spotify_user_session: SpotifyUserSession,
         spotify_response: dict[str, Any],
-        page_limit: int,
+        spotify_response_pages: tuple[int, int],
     ) -> None:
-        tracks_saved = await spotify_user_session.get_saved_tracks(limit=page_limit)
+        tracks_saved = await spotify_user_session.get_saved_tracks(limit=spotify_response_pages[1])
         assert len(tracks_saved) == 20
 
         track_saved_first = tracks_saved[0]
@@ -245,3 +399,123 @@ class TestSpotifyUserSession:
         assert track_saved_last.artists[0].name == "SCH"
         assert track_saved_last.provider == MusicProvider.SPOTIFY
         assert track_saved_last.provider_id == "4nKcfnZ2Qj5urw0ekrnF2M"
+
+    @pytest.mark.parametrize(
+        ("spotify_response", "spotify_response_pages"),
+        [("playlists", {"total": 4, "limit": 2})],
+        indirect=["spotify_response", "spotify_response_pages"],
+    )
+    async def test__get_playlist_tracks__duplicate__none(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        spotify_response_pages: tuple[int, int],
+        spotify_response_playlist_items_pages: tuple[int, int],
+    ) -> None:
+        playlist_total = spotify_response_pages[0]
+        playlist_tracks_total = spotify_response_playlist_items_pages[0]
+
+        tracks = await spotify_user_session.get_playlist_tracks(limit=spotify_response_pages[1])
+        assert len(tracks) == playlist_total * playlist_tracks_total
+
+        track_first = tracks[0]
+        assert track_first.id is not None
+        assert track_first.user_id == spotify_user_session.user.id
+        assert track_first.name == "El Preso"
+        assert track_first.popularity == 0
+        assert track_first.is_saved is False
+        assert track_first.is_top is False
+        assert track_first.top_position is None
+        assert len(track_first.artists) == 1
+        assert track_first.artists[0].provider_id == "5aAlzehdUM14I4ppq24Xob"
+        assert track_first.artists[0].name == "Fruko Y Sus Tesos"
+        assert track_first.provider == MusicProvider.SPOTIFY
+        assert track_first.provider_id == "69LfSVCs3xfpwLiS6c0q4E"
+
+        track_last = tracks[-1]
+        assert track_last.id is not None
+        assert track_last.user_id == spotify_user_session.user.id
+        assert track_last.name == "Con la Punta del Pie"
+        assert track_last.popularity == 56
+        assert track_last.is_saved is False
+        assert track_last.is_top is False
+        assert track_last.top_position is None
+        assert len(track_last.artists) == 1
+        assert track_last.artists[0].provider_id == "4dCNiyQXmtiWA157q3uFyj"
+        assert track_last.artists[0].name == "La Gloria Matancera"
+        assert track_last.provider == MusicProvider.SPOTIFY
+        assert track_last.provider_id == "4rt2zpNhFBayp948Pi6liZ"
+
+    @pytest.mark.parametrize(
+        ("spotify_response", "spotify_response_pages", "spotify_response_playlist_items_pages"),
+        [("playlists", {"total": 4, "limit": 2}, {"has_duplicates": True})],
+        indirect=["spotify_response", "spotify_response_pages", "spotify_response_playlist_items_pages"],
+    )
+    async def test__get_playlist_tracks__duplicate(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        spotify_response_pages: tuple[int, int],
+        spotify_response_playlist_items_pages: tuple[int, int],
+    ) -> None:
+        playlist_tracks_total = spotify_response_playlist_items_pages[0]
+
+        tracks = await spotify_user_session.get_playlist_tracks(limit=spotify_response_pages[1])
+        assert len(tracks) == playlist_tracks_total
+
+        track_first = tracks[0]
+        assert track_first.id is not None
+        assert track_first.user_id == spotify_user_session.user.id
+        assert track_first.name == "El Preso"
+        assert track_first.popularity == 0
+        assert track_first.is_saved is False
+        assert track_first.is_top is False
+        assert track_first.top_position is None
+        assert len(track_first.artists) == 1
+        assert track_first.artists[0].provider_id == "5aAlzehdUM14I4ppq24Xob"
+        assert track_first.artists[0].name == "Fruko Y Sus Tesos"
+        assert track_first.provider == MusicProvider.SPOTIFY
+        assert track_first.provider_id == "69LfSVCs3xfpwLiS6c0q4E"
+
+        track_last = tracks[-1]
+        assert track_last.id is not None
+        assert track_last.user_id == spotify_user_session.user.id
+        assert track_last.name == "Micaela"
+        assert track_last.popularity == 54
+        assert track_last.is_saved is False
+        assert track_last.is_top is False
+        assert track_last.top_position is None
+        assert len(track_last.artists) == 2
+        assert track_last.artists[0].provider_id == "34qU0b0yRjEzRJtknerEDS"
+        assert track_last.artists[0].name == "Sonora Carruseles"
+        assert track_last.artists[1].provider_id == "125qXSgsP3irn2SEE6rpor"
+        assert track_last.artists[1].name == "Luis Florez"
+        assert track_last.provider == MusicProvider.SPOTIFY
+        assert track_last.provider_id == "1m3paVx65imhvCjPx505Oy"
+
+    @pytest.mark.parametrize(
+        ("spotify_response", "spotify_response_pages"),
+        [("playlists", {"total": 1, "limit": 1})],
+        indirect=["spotify_response", "spotify_response_pages"],
+    )
+    async def test__get_playlist_tracks__page_validation_error(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        spotify_response_pages: tuple[int, int],
+        spotify_response_playlist_items_invalid_pages: None,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        playlist = spotify_response["items"][0]
+
+        with caplog.at_level(logging.ERROR):
+            tracks = await spotify_user_session.get_playlist_tracks(limit=1)
+        assert len(tracks) == 0
+
+        prefix_log = f"[PlaylistTracks({playlist['name']})]"
+        exc_msg = f"{prefix_log} - Page validation error on /playlists/{playlist['id']}/items (offset: 0): "
+        assert f"Skip playlist {playlist['name'].strip()} with error: {exc_msg}" in caplog.text
+        assert "3 validation errors for SpotifyPlaylistTrackPage" in caplog.text
+        assert "items.0.item.id\n  Input should be a valid string" in caplog.text
+        assert "items.0.item.href\n  URL input should be a string or URL" in caplog.text
+        assert "items.0.item.artists.0.id\n  Input should be a valid string" in caplog.text

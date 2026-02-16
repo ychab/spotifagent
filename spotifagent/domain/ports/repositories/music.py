@@ -35,4 +35,10 @@ class TrackRepositoryPort(ABC):
     async def bulk_upsert(self, tracks: list[Track], batch_size: int) -> tuple[list[uuid.UUID], int]: ...
 
     @abstractmethod
-    async def purge(self, user_id: uuid.UUID, is_top: bool = False, is_saved: bool = False) -> int: ...
+    async def purge(
+        self,
+        user_id: uuid.UUID,
+        is_top: bool = False,
+        is_saved: bool = False,
+        is_playlist: bool = False,
+    ) -> int: ...

@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import typer
 
 from spotifagent.application.use_cases.spotify_oauth_redirect import spotify_oauth_redirect
+from spotifagent.domain.exceptions import UserNotFound
 from spotifagent.domain.ports.repositories.users import UserRepositoryPort
 from spotifagent.infrastructure.entrypoints.cli.dependencies import get_db
 from spotifagent.infrastructure.entrypoints.cli.dependencies import get_spotify_client
@@ -25,7 +26,7 @@ async def connect_logic(email: EmailStr, timeout: float, poll_interval: float) -
 
         user = await user_repository.get_by_email(email)
         if not user:
-            raise typer.BadParameter(f"User not found with email: {email}")
+            raise UserNotFound()
 
         authorization_url = await spotify_oauth_redirect(
             user=user,
@@ -38,22 +39,13 @@ async def connect_logic(email: EmailStr, timeout: float, poll_interval: float) -
         typer.echo(f"Opening browser for authentication: {authorization_url}")
         typer.launch(str(authorization_url))
 
-        try:
-            await _wait_for_authentication(
-                session=session,
-                user_repository=user_repository,
-                email=email,
-                timeout=timeout,
-                poll_interval=poll_interval,
-            )
-        except TimeoutError:
-            typer.secho(
-                f"\n\nUnable to connect after {timeout} seconds. Did you open your browser and accept?",
-                fg=typer.colors.RED,
-                err=True,
-            )
-        else:
-            typer.secho("\n\nAuthentication successful! \u2705", fg=typer.colors.GREEN)
+        await _wait_for_authentication(
+            session=session,
+            user_repository=user_repository,
+            email=email,
+            timeout=timeout,
+            poll_interval=poll_interval,
+        )
 
 
 async def _wait_for_authentication(

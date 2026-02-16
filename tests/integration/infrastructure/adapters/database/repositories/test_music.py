@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -211,21 +209,30 @@ class TestTrackRepository:
         ]
 
     @pytest.fixture
-    async def tracks_delete(self, request: pytest.FixtureRequest, user: User) -> list[Track]:
-        params: dict[str, Any] = getattr(request, "param", {})
-        is_top = params.get("is_top", False)
-        is_saved = params.get("is_saved", False)
-
-        tracks_user = await TrackModelFactory.create_batch_async(size=4, user_id=user.id, is_top=False, is_saved=False)
-        tracks_user += await TrackModelFactory.create_batch_async(
+    async def tracks_delete(self, user: User) -> list[Track]:
+        tracks_top = await TrackModelFactory.create_batch_async(
+            size=4,
+            user_id=user.id,
+            is_top=True,
+            is_saved=False,
+        )
+        tracks_saved = await TrackModelFactory.create_batch_async(
             size=3,
             user_id=user.id,
-            is_top=is_top,
-            is_saved=is_saved,
+            is_top=False,
+            is_saved=True,
         )
-        tracks_others = await TrackModelFactory.create_batch_async(size=2)
+        tracks_playlist = await TrackModelFactory.create_batch_async(
+            size=2,
+            user_id=user.id,
+            is_top=False,
+            is_saved=False,
+        )
+        tracks_others = await TrackModelFactory.create_batch_async(size=1)
 
-        return [Track.model_validate(track_db) for track_db in tracks_user + tracks_others]
+        return [
+            Track.model_validate(track_db) for track_db in tracks_top + tracks_saved + tracks_playlist + tracks_others
+        ]
 
     @pytest.mark.parametrize(("offset", "limit"), [(None, None), (2, 5)])
     async def test__get_list__nominal(
@@ -330,14 +337,17 @@ class TestTrackRepository:
         assert artists == expected_artists
 
     @pytest.mark.parametrize(
-        ("tracks_delete", "is_top", "is_saved", "expected_count"),
+        ("is_top", "is_saved", "is_playlist", "expected_count"),
         [
-            ({"is_top": False, "is_saved": False}, False, False, 4 + 3),
-            ({"is_top": True, "is_saved": False}, True, False, 0 + 3),
-            ({"is_top": False, "is_saved": True}, False, True, 0 + 3),
-            ({"is_top": True, "is_saved": True}, True, True, 0 + 3),
+            pytest.param(False, False, False, 4 + 3 + 2, id="all_implicit"),
+            pytest.param(True, False, False, 4 + 0 + 0, id="top_only"),
+            pytest.param(False, True, False, 0 + 3 + 0, id="saved_only"),
+            pytest.param(False, False, True, 0 + 0 + 2, id="playlist_only"),
+            pytest.param(True, True, False, 4 + 3 + 0, id="top_and_saved"),
+            pytest.param(True, False, True, 4 + 0 + 2, id="top_and_playlist"),
+            pytest.param(False, True, True, 0 + 3 + 2, id="saved_and_playlist"),
+            pytest.param(True, True, True, 4 + 3 + 2, id="all_explicit"),
         ],
-        indirect=["tracks_delete"],
     )
     async def test__purge(
         self,
@@ -346,13 +356,14 @@ class TestTrackRepository:
         tracks_delete: list[Track],
         is_top: bool,
         is_saved: bool,
+        is_playlist: bool,
         expected_count: int,
         track_repository: TrackRepositoryPort,
     ) -> None:
-        expected_other_count = 2
+        expected_other_count = 1
         expected_total_user_count = len(tracks_delete) - expected_other_count
 
-        count = await track_repository.purge(user.id, is_top=is_top, is_saved=is_saved)
+        count = await track_repository.purge(user.id, is_top=is_top, is_saved=is_saved, is_playlist=is_playlist)
         assert count == expected_count
 
         # Check if all artists have been deleted for that user.

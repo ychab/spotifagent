@@ -53,7 +53,10 @@ class TestSpotifyConnectLogic:
         spotify_account: SpotifyAccountCreate,
         async_session_db: AsyncSession,
     ) -> Callable[[float], asyncio.Task]:
-        """Helper to simulate the external OAuth callback in the background. Thank Gemini!"""
+        """
+        Helper to simulate the external OAuth callback in the background.
+        Yeah, I had to confess for this one: thank Gemini pro!
+        """
 
         def _trigger(delay: float = 0.2) -> asyncio.Task:
             async def _background_update():
@@ -98,9 +101,6 @@ class TestSpotifyConnectLogic:
         await connect_logic(user.email, timeout=2.0, poll_interval=0.1)
         # Ensure the background task completed without error
         await task
-
-        captured = capsys.readouterr()
-        assert "Authentication successful!" in captured.out
 
         stmt = select(UserModel).where(UserModel.email == user.email).options(selectinload(UserModel.spotify_account))
         result = await async_session_db.execute(stmt)
