@@ -34,11 +34,9 @@ class TestSpotifySyncLogic:
             track_updated=250,
         )
 
-        await sync_logic(email=user.email, config=SyncConfig(sync=True))
+        report = await sync_logic(email=user.email, config=SyncConfig(sync=True))
 
-        captured = capsys.readouterr()
-        assert "Synchronization successful!" in captured.out
-        assert "- 100 artists created" in captured.out
-        assert "- 250 artists updated" in captured.out
-        assert "- 100 tracks created" in captured.out
-        assert "- 250 tracks updated" in captured.out
+        assert report.artist_created == 100
+        assert report.artist_updated == 250
+        assert report.track_created == 100
+        assert report.track_updated == 250

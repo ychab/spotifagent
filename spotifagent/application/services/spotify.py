@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import Callable
 from typing import Any
@@ -7,8 +8,10 @@ from spotifagent.domain.entities.music import Artist
 from spotifagent.domain.entities.music import BaseMusicItem
 from spotifagent.domain.entities.music import Track
 from spotifagent.domain.entities.spotify import SpotifyArtist
-from spotifagent.domain.entities.spotify import SpotifyItem
 from spotifagent.domain.entities.spotify import SpotifyPage
+from spotifagent.domain.entities.spotify import SpotifyPlaylist
+from spotifagent.domain.entities.spotify import SpotifyPlaylistPage
+from spotifagent.domain.entities.spotify import SpotifyPlaylistTrackPage
 from spotifagent.domain.entities.spotify import SpotifySavedTrackPage
 from spotifagent.domain.entities.spotify import SpotifyTopArtistPage
 from spotifagent.domain.entities.spotify import SpotifyTopTrackPage
@@ -64,6 +67,107 @@ class SpotifyUserSession:
         self.spotify_account_repository = spotify_account_repository
         self.spotify_client = spotify_client
 
+    # -------------------------------------------------------------------------
+    # Public API
+    # -------------------------------------------------------------------------
+
+    async def get_top_artists(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Artist]:
+        return await self._fetch_pages(
+            endpoint="/me/top/artists",
+            page_model=SpotifyTopArtistPage,
+            page_processor=self._extract_top_artists,
+            params={"time_range": time_range},
+            limit=limit,
+            prefix_log="[TopArtists]",
+        )
+
+    async def get_top_tracks(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Track]:
+        return await self._fetch_pages(
+            endpoint="/me/top/tracks",
+            page_model=SpotifyTopTrackPage,
+            page_processor=self._extract_top_tracks,
+            params={"time_range": time_range},
+            limit=limit,
+            prefix_log="[TopTracks]",
+        )
+
+    async def get_saved_tracks(self, limit: int = 50) -> list[Track]:
+        return await self._fetch_pages(
+            endpoint="/me/tracks",
+            page_model=SpotifySavedTrackPage,
+            page_processor=self._extract_saved_tracks,
+            limit=limit,
+            prefix_log="[SavedTracks]",
+        )
+
+    async def get_playlist_tracks(self, limit: int = 50) -> list[Track]:
+        playlists = await self._fetch_pages(
+            endpoint="/me/playlists",
+            page_model=SpotifyPlaylistPage,
+            page_processor=self._extract_playlists,
+            limit=limit,
+            prefix_log="[Playlists]",
+        )
+        logger.info(f"Found {len(playlists)} playlists. Fetching tracks...")
+
+        # Fetch in parallel all playlist's tracks.
+        async with asyncio.TaskGroup() as tg:
+            tasks = [tg.create_task(self._fetch_playlist_tracks(playlist, limit)) for playlist in playlists]
+
+        return [track for task in tasks for track in task.result()]
+
+    # -------------------------------------------------------------------------
+    # Core Logic
+    # -------------------------------------------------------------------------
+
+    async def _fetch_playlist_tracks(self, playlist: SpotifyPlaylist, limit: int) -> list[Track]:
+        return await self._fetch_pages(
+            endpoint=f"/playlists/{playlist.id}/items",
+            page_model=SpotifyPlaylistTrackPage,
+            page_processor=self._extract_playlist_tracks,
+            params={
+                "fields": "total,limit,offset,items(item(id,name,href,popularity,artists(id,name)))",
+                "additional_types": "track",
+            },
+            limit=limit,
+            prefix_log=f"[PlaylistTracks({playlist.name})]",
+        )
+
+    async def _fetch_pages[SpotifyPageType: SpotifyPage, MusicItemType: BaseMusicItem | SpotifyPlaylist](
+        self,
+        endpoint: str,
+        page_model: type[SpotifyPageType],
+        page_processor: Callable[[SpotifyPageType, int], list[MusicItemType]],
+        method: str = "GET",
+        params: dict[str, Any] | None = None,
+        offset: int = 0,
+        limit: int = 50,
+        prefix_log: str = "",
+    ) -> list[MusicItemType]:
+        items: list[MusicItemType] = []
+
+        logger.info(f"{prefix_log} Start fetching endpoint: {endpoint}")
+        while True:
+            data = await self._execute_request(
+                method=method,
+                endpoint=endpoint,
+                params={
+                    "offset": offset,
+                    "limit": limit,
+                    **(params or {}),
+                },
+            )
+            page = page_model.model_validate(data)
+            items += page_processor(page, offset)
+
+            logger.info(f"{prefix_log} ... processed {offset + limit}/{page.total} ...")
+            if len(items) >= page.total or len(page.items) < limit:
+                break
+
+            offset += limit
+
+        return items
+
     async def _execute_request(
         self,
         method: str,
@@ -79,104 +183,36 @@ class SpotifyUserSession:
             json_data=json_data,
         )
 
-        # Check if token changed (refresh happened) and persist only if necessary
-        if self.user.spotify_account and token_state.access_token != self.user.spotify_account.token_access:
-            update_data = token_state.to_user_update()
-            await self.spotify_account_repository.update(user_id=self.user.id, spotify_account_data=update_data)
+        current_token = self.user.spotify_account.token_access if self.user.spotify_account else None
+        if current_token and token_state.access_token != current_token:
+            await self.spotify_account_repository.update(
+                user_id=self.user.id, spotify_account_data=token_state.to_user_update()
+            )
 
         return response_data
 
-    async def get_top_artists(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Artist]:
-        return await self._fetch_paged_top_items(
-            page_model=SpotifyTopArtistPage,
-            dto_callback=self._map_top_artist,
-            endpoint="/me/top/artists",
-            limit=limit,
-            time_range=time_range,
-        )
+    # -------------------------------------------------------------------------
+    # Extractors
+    # -------------------------------------------------------------------------
 
-    async def get_top_tracks(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Track]:
-        return await self._fetch_paged_top_items(
-            page_model=SpotifyTopTrackPage,
-            dto_callback=self._map_top_track,
-            endpoint="/me/top/tracks",
-            limit=limit,
-            time_range=time_range,
-        )
+    def _extract_playlists(self, page: SpotifyPlaylistPage, *_: Any) -> list[SpotifyPlaylist]:
+        return list(page.items)
 
-    async def get_saved_tracks(self, limit: int = 50) -> list[Track]:
-        return await self._fetch_pages(
-            page_model=SpotifySavedTrackPage,
-            dto_callback=self._map_saved_track,
-            endpoint="/me/tracks",
-            method="GET",
-            limit=limit,
-        )
+    def _extract_top_artists(self, page: SpotifyTopArtistPage, offset: int) -> list[Artist]:
+        return [self._map_top_artist(item, offset + i + 1) for i, item in enumerate(page.items)]
 
-    async def _fetch_paged_top_items[
-        SpotifyPageType: SpotifyPage,
-        SpotifyItemType: SpotifyItem,
-        MusicItemType: BaseMusicItem,
-    ](
-        self,
-        endpoint: str,
-        limit: int,
-        time_range: TimeRange,
-        page_model: type[SpotifyPageType],
-        dto_callback: Callable[[SpotifyItemType, int], MusicItemType],
-    ) -> list[MusicItemType]:
-        return await self._fetch_pages(
-            page_model=page_model,
-            dto_callback=dto_callback,
-            endpoint=endpoint,
-            method="GET",
-            params={
-                "time_range": time_range,
-            },
-            limit=limit,
-        )
+    def _extract_top_tracks(self, page: SpotifyTopTrackPage, offset: int) -> list[Track]:
+        return [self._map_top_track(item, offset + i + 1) for i, item in enumerate(page.items)]
 
-    async def _fetch_pages[
-        SpotifyPageType: SpotifyPage,
-        MusicItemType: BaseMusicItem,
-    ](
-        self,
-        page_model: type[SpotifyPageType],
-        dto_callback: Callable[..., MusicItemType],
-        endpoint: str,
-        method: str,
-        params: dict[str, Any] | None = None,
-        offset: int = 0,
-        limit: int = 50,
-    ) -> list[MusicItemType]:
-        items: list[MusicItemType] = []
+    def _extract_saved_tracks(self, page: SpotifySavedTrackPage, *_: Any) -> list[Track]:
+        return [self._map_saved_track(item.track) for item in page.items]
 
-        logger.info(f"Start fetch {endpoint} pages")
-        while True:
-            data = await self._execute_request(
-                method=method,
-                endpoint=endpoint,
-                params={
-                    "offset": offset,
-                    "limit": limit,
-                    **(params or {}),
-                },
-            )
-            page = page_model.model_validate(data)
-            logger.info(f"... processed {offset + limit}/{page.total} ...")
+    def _extract_playlist_tracks(self, page: SpotifyPlaylistTrackPage, *_: Any) -> list[Track]:
+        return [self._map_track(item.item) for item in page.items if item.item]
 
-            if isinstance(page, SpotifySavedTrackPage):
-                items += [dto_callback(item.track) for item in page.items]
-            else:
-                items += [dto_callback(item, offset + i + 1) for i, item in enumerate(page.items)]
-
-            if len(items) >= page.total or len(page.items) < limit:
-                logger.info("... finished ...")
-                break
-
-            offset += limit
-
-        return items
+    # -------------------------------------------------------------------------
+    # Mappers (DTO)
+    # -------------------------------------------------------------------------
 
     def _map_top_artist(self, item: SpotifyArtist, position: int) -> Artist:
         return Artist.model_validate(

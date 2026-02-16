@@ -15,7 +15,7 @@ app = typer.Typer()
 def create(  # pragma: no cover
     email: str = typer.Option(..., help="User email address", parser=parse_email),
     password: str = typer.Option(..., prompt=True, hide_input=True, confirmation_prompt=True, parser=parse_password),
-):
+) -> None:
     try:
         asyncio.run(user_create_logic(email, password))
     except Exception as e:
@@ -28,7 +28,7 @@ def update(  # pragma: no cover
     user_id: uuid.UUID = typer.Argument(..., help="User ID to update"),
     email: str | None = typer.Option(None, help="User email address to change", parser=parse_email),
     password: str | None = typer.Option(None, help="User password to change", parser=parse_password),
-):
+) -> None:
     try:
         asyncio.run(user_update_logic(user_id, email=email, password=password))
     except Exception as e:

@@ -2,6 +2,10 @@
 
 This quick and dirty document just list the roadmap tasks.
 
+## CLI
+
+- review CLI command to remove skip coverage and adapt the unit tests
+
 ## Tests
 
 - add warning log enabled for deprecated features?
@@ -23,9 +27,9 @@ This quick and dirty document just list the roadmap tasks.
 
 ## Sync
 
-- review it for a top level batch handling (to release memory)
-- spotify: fetch user songs (liked song)
+- review it for a top level batch handling (to release memory yb saving in DB before) + atomicity?
 - spotify: fetch all playlists to collect all the user's song (to don't get recommendations for them)
+- spotify: import the extended streaming history?
 
 ## Recommendations / Suggestions
 

@@ -1,5 +1,4 @@
 from faker import Faker
-from polyfactory import Ignore
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from polyfactory.factories.sqlalchemy_factory import T
 
@@ -18,5 +17,3 @@ class BaseModelFactory(SQLAlchemyFactory[T]):
     # the usage of MappedAsDataclass with init=False on relationship fields.
     __set_relationships__ = False
     __set_association_proxy__ = False
-
-    id = Ignore()

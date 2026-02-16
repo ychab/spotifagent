@@ -1,0 +1,290 @@
+{
+  "href": "https://api.spotify.com/v1/users/yannick.chabbert/playlists?offset=0&limit=6&locale=fr-FR,fr;q%3D0.9,en-US;q%3D0.8,en;q%3D0.7,es-419;q%3D0.6,es;q%3D0.5",
+  "limit": 6,
+  "next": "https://api.spotify.com/v1/users/yannick.chabbert/playlists?offset=6&limit=6&locale=fr-FR,fr;q%3D0.9,en-US;q%3D0.8,en;q%3D0.7,es-419;q%3D0.6,es;q%3D0.5",
+  "offset": 0,
+  "previous": null,
+  "total": 131,
+  "items": [
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/0wKgiV47itigJyxBgFxAu1"
+      },
+      "href": "https://api.spotify.com/v1/playlists/0wKgiV47itigJyxBgFxAu1",
+      "id": "0wKgiV47itigJyxBgFxAu1",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e0225fa3658db77c1253651a84dab67616d00001e02858794a4e292dedf24136160ab67616d00001e02a5f7b2772304b04928c4d851ab67616d00001e02d7d64e79cfdf01d037efd0e9",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e0225fa3658db77c1253651a84dab67616d00001e02858794a4e292dedf24136160ab67616d00001e02a5f7b2772304b04928c4d851ab67616d00001e02d7d64e79cfdf01d037efd0e9",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e0225fa3658db77c1253651a84dab67616d00001e02858794a4e292dedf24136160ab67616d00001e02a5f7b2772304b04928c4d851ab67616d00001e02d7d64e79cfdf01d037efd0e9",
+          "width": 60
+        }
+      ],
+      "name": "Salsa ",
+      "owner": {
+        "display_name": "alex@",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/alexandra8828"
+        },
+        "href": "https://api.spotify.com/v1/users/alexandra8828",
+        "id": "alexandra8828",
+        "type": "user",
+        "uri": "spotify:user:alexandra8828"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAAt5I9LhS2xFYsvxEHDdk63iK2f83x",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/0wKgiV47itigJyxBgFxAu1/tracks",
+        "total": 180
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/0wKgiV47itigJyxBgFxAu1/items",
+        "total": 180
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:0wKgiV47itigJyxBgFxAu1"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/1xnKqEZDpMWvrts4M9I9GC"
+      },
+      "href": "https://api.spotify.com/v1/playlists/1xnKqEZDpMWvrts4M9I9GC",
+      "id": "1xnKqEZDpMWvrts4M9I9GC",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e02144e0de96b81bf167b23c536ab67616d00001e0285141f12480a9725b80c1c72ab67616d00001e02a5b741e167ba462c7a10f513ab67616d00001e02b72a5c0be578ad5b229bf0c2",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e02144e0de96b81bf167b23c536ab67616d00001e0285141f12480a9725b80c1c72ab67616d00001e02a5b741e167ba462c7a10f513ab67616d00001e02b72a5c0be578ad5b229bf0c2",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e02144e0de96b81bf167b23c536ab67616d00001e0285141f12480a9725b80c1c72ab67616d00001e02a5b741e167ba462c7a10f513ab67616d00001e02b72a5c0be578ad5b229bf0c2",
+          "width": 60
+        }
+      ],
+      "name": "Rap FR latino",
+      "owner": {
+        "display_name": "yannick.chabbert",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/yannick.chabbert"
+        },
+        "href": "https://api.spotify.com/v1/users/yannick.chabbert",
+        "id": "yannick.chabbert",
+        "type": "user",
+        "uri": "spotify:user:yannick.chabbert"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAAKqcn1hINcG75Rlvl/TTDQ7RmnTFB",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/1xnKqEZDpMWvrts4M9I9GC/tracks",
+        "total": 40
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/1xnKqEZDpMWvrts4M9I9GC/items",
+        "total": 40
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:1xnKqEZDpMWvrts4M9I9GC"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/7eMOBzBKCXFWIxOICBjc2G"
+      },
+      "href": "https://api.spotify.com/v1/playlists/7eMOBzBKCXFWIxOICBjc2G",
+      "id": "7eMOBzBKCXFWIxOICBjc2G",
+      "images": [
+        {
+          "height": null,
+          "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da8423681eb17740d77d8b46406b",
+          "width": null
+        }
+      ],
+      "name": "salsa colombiana pa bailar 🇨🇴",
+      "owner": {
+        "display_name": "gabbybohorquez",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/gabbybohorquez"
+        },
+        "href": "https://api.spotify.com/v1/users/gabbybohorquez",
+        "id": "gabbybohorquez",
+        "type": "user",
+        "uri": "spotify:user:gabbybohorquez"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAAoBkUBnHn+FqmQ1VZIyAHjGA3oNSo",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/7eMOBzBKCXFWIxOICBjc2G/tracks",
+        "total": 109
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/7eMOBzBKCXFWIxOICBjc2G/items",
+        "total": 109
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:7eMOBzBKCXFWIxOICBjc2G"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/1JU6o5OAUKJBo3z2hZums4"
+      },
+      "href": "https://api.spotify.com/v1/playlists/1JU6o5OAUKJBo3z2hZums4",
+      "id": "1JU6o5OAUKJBo3z2hZums4",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e0280cee3a44722d67afd303d69ab67616d00001e02ac8d0a5de087bf64cfde1890ab67616d00001e02ecc219a3762f2aa8a3b8b323ab67616d00001e02f715e5026571c08ed4357b1f",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e0280cee3a44722d67afd303d69ab67616d00001e02ac8d0a5de087bf64cfde1890ab67616d00001e02ecc219a3762f2aa8a3b8b323ab67616d00001e02f715e5026571c08ed4357b1f",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e0280cee3a44722d67afd303d69ab67616d00001e02ac8d0a5de087bf64cfde1890ab67616d00001e02ecc219a3762f2aa8a3b8b323ab67616d00001e02f715e5026571c08ed4357b1f",
+          "width": 60
+        }
+      ],
+      "name": "#salsa yaniqué",
+      "owner": {
+        "display_name": "yannick.chabbert",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/yannick.chabbert"
+        },
+        "href": "https://api.spotify.com/v1/users/yannick.chabbert",
+        "id": "yannick.chabbert",
+        "type": "user",
+        "uri": "spotify:user:yannick.chabbert"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAA45PqG8+VlDxzYZm4h1IFADVEAYX4",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/1JU6o5OAUKJBo3z2hZums4/tracks",
+        "total": 144
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/1JU6o5OAUKJBo3z2hZums4/items",
+        "total": 144
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:1JU6o5OAUKJBo3z2hZums4"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/2FktZj2eQWnUpVE6lK2dTC"
+      },
+      "href": "https://api.spotify.com/v1/playlists/2FktZj2eQWnUpVE6lK2dTC",
+      "id": "2FktZj2eQWnUpVE6lK2dTC",
+      "images": [
+        {
+          "height": 640,
+          "url": "https://mosaic.scdn.co/640/ab67616d00001e027e41808b163893160ccf414bab67616d00001e02b72a5c0be578ad5b229bf0c2ab67616d00001e02bbe70fac167e2417aa4a230aab67616d00001e02f789b02ba6655a1f03d17b9f",
+          "width": 640
+        },
+        {
+          "height": 300,
+          "url": "https://mosaic.scdn.co/300/ab67616d00001e027e41808b163893160ccf414bab67616d00001e02b72a5c0be578ad5b229bf0c2ab67616d00001e02bbe70fac167e2417aa4a230aab67616d00001e02f789b02ba6655a1f03d17b9f",
+          "width": 300
+        },
+        {
+          "height": 60,
+          "url": "https://mosaic.scdn.co/60/ab67616d00001e027e41808b163893160ccf414bab67616d00001e02b72a5c0be578ad5b229bf0c2ab67616d00001e02bbe70fac167e2417aa4a230aab67616d00001e02f789b02ba6655a1f03d17b9f",
+          "width": 60
+        }
+      ],
+      "name": "Love",
+      "owner": {
+        "display_name": "yannick.chabbert",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/yannick.chabbert"
+        },
+        "href": "https://api.spotify.com/v1/users/yannick.chabbert",
+        "id": "yannick.chabbert",
+        "type": "user",
+        "uri": "spotify:user:yannick.chabbert"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAACkEMM+REG6tXnbtIP/DeWiSuHoRS",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/2FktZj2eQWnUpVE6lK2dTC/tracks",
+        "total": 9
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/2FktZj2eQWnUpVE6lK2dTC/items",
+        "total": 9
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:2FktZj2eQWnUpVE6lK2dTC"
+    },
+    {
+      "collaborative": false,
+      "description": "",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/00QNe3GusPOHYmO1xMWlPR"
+      },
+      "href": "https://api.spotify.com/v1/playlists/00QNe3GusPOHYmO1xMWlPR",
+      "id": "00QNe3GusPOHYmO1xMWlPR",
+      "images": [
+        {
+          "height": null,
+          "url": "https://i.scdn.co/image/ab67616d00001e023402ba9f7813878fd0118779",
+          "width": null
+        }
+      ],
+      "name": "Classique",
+      "owner": {
+        "display_name": "yannick.chabbert",
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/yannick.chabbert"
+        },
+        "href": "https://api.spotify.com/v1/users/yannick.chabbert",
+        "id": "yannick.chabbert",
+        "type": "user",
+        "uri": "spotify:user:yannick.chabbert"
+      },
+      "primary_color": null,
+      "public": true,
+      "snapshot_id": "AAAAAqvlzD+cbLpoGt3Yi0JKezmAcG2H",
+      "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/00QNe3GusPOHYmO1xMWlPR/tracks",
+        "total": 1
+      },
+      "items": {
+        "href": "https://api.spotify.com/v1/playlists/00QNe3GusPOHYmO1xMWlPR/items",
+        "total": 1
+      },
+      "type": "playlist",
+      "uri": "spotify:playlist:00QNe3GusPOHYmO1xMWlPR"
+    }
+  ]
+}
