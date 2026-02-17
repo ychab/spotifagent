@@ -1,18 +1,16 @@
 from collections.abc import Iterable
-from typing import Final
 from unittest import mock
 
 import pytest
 from typer.testing import CliRunner
 
 from spotifagent.domain.exceptions import UserAlreadyExistsException
-from spotifagent.infrastructure.entrypoints.cli.commands.users import user_create_logic
 from spotifagent.infrastructure.entrypoints.cli.main import app
 
 from tests.unit.infrastructure.entrypoints.cli.conftest import TextCleaner
 
 
-class TestUserCreateCommand:
+class TestUserCreateParserCommand:
     @pytest.fixture(autouse=True)
     def mock_create_user_logic(self) -> Iterable[mock.AsyncMock]:
         target_path = "spotifagent.infrastructure.entrypoints.cli.commands.users.user_create_logic"
@@ -91,38 +89,49 @@ class TestUserCreateCommand:
         assert f"Invalid value for '--password': {expected_msg}" in result.output
 
 
-@pytest.mark.usefixtures("mock_get_db", "mock_user_repository")
-class TestUserCreateLogic:
-    TARGET_PATH: Final[str] = "spotifagent.infrastructure.entrypoints.cli.commands.users.create"
-
+class TestUserCreateCommand:
     @pytest.fixture
-    def mock_user_service(self) -> Iterable[mock.AsyncMock]:
-        with mock.patch(f"{self.TARGET_PATH}.user_create", new_callable=mock.AsyncMock) as patched:
+    def mock_user_create_logic(self) -> Iterable[mock.AsyncMock]:
+        target_path = "spotifagent.infrastructure.entrypoints.cli.commands.users.user_create_logic"
+        with mock.patch(target_path, new_callable=mock.AsyncMock) as patched:
             yield patched
 
-    async def test__user_already_exists(
+    def test__nominal(
         self,
-        mock_user_service: mock.AsyncMock,
-        capsys: pytest.CaptureFixture,
+        mock_user_create_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
     ) -> None:
-        mock_user_service.side_effect = UserAlreadyExistsException()
+        result = runner.invoke(app, ["users", "create", "--email", "test@example.com", "--password", "testtest"])
+        assert result.exit_code == 0
 
-        email = "test@example.com"
-        with pytest.raises(UserAlreadyExistsException):
-            await user_create_logic(email, "testtest")
+        output = clean_typer_text(result.stdout)
+        assert "User test@example.com created successfully!" in output
 
-        captured = capsys.readouterr()
-        assert f"Error: User with email {email} already exists." in captured.err
-
-    async def test__unexpected_exceptions(
+    def test__user_already_exists(
         self,
-        mock_user_service: mock.AsyncMock,
-        capsys: pytest.CaptureFixture,
+        mock_user_create_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
     ) -> None:
-        mock_user_service.side_effect = Exception("Boom")
+        mock_user_create_logic.side_effect = UserAlreadyExistsException()
 
-        with pytest.raises(Exception, match="Boom"):
-            await user_create_logic("test@example.com", "testtest")
+        result = runner.invoke(app, ["users", "create", "--email", "test@example.com", "--password", "testtest"])
+        assert result.exit_code != 0
 
-        captured = capsys.readouterr()
-        assert "Unexpected error: Boom" in captured.err
+        output = clean_typer_text(result.stderr)
+        assert "User with email test@example.com already exists." in output
+
+    def test__unexpected_exceptions(
+        self,
+        mock_user_create_logic: mock.AsyncMock,
+        runner: CliRunner,
+        clean_typer_text: TextCleaner,
+    ) -> None:
+        mock_user_create_logic.side_effect = Exception("Boom")
+
+        result = runner.invoke(app, ["users", "create", "--email", "test@example.com", "--password", "testtest"])
+        assert result.exit_code != 0
+
+        output = clean_typer_text(result.stderr)
+        assert "Error: Boom" in output
