@@ -17,7 +17,7 @@ app = typer.Typer()
 
 
 @app.command("connect", help="Connect a user account to Spotify via OAuth.")
-def connect(  # pragma: no cover
+def connect(
     email: str = typer.Option(..., help="User email address", parser=parse_email),
     timeout: float = typer.Option(60.0, help="Seconds to wait for authentication.", min=10),
     poll_interval: float = typer.Option(2.0, help="Seconds between status checks.", min=0.5),
@@ -30,9 +30,20 @@ def connect(  # pragma: no cover
     """
     try:
         asyncio.run(connect_logic(email, timeout, poll_interval))
+    except UserNotFound as e:
+        raise typer.BadParameter(f"User not found with email: {email}") from e
+    except TimeoutError as e:
+        typer.secho(
+            f"\n\nUnable to connect after {timeout} seconds. Did you open your browser and accept?",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1) from e
     except Exception as e:
         typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from e
+
+    typer.secho("\n\nAuthentication successful! \u2705", fg=typer.colors.GREEN)
 
 
 @app.command("sync", help="Synchronize the Spotify user's items.")
