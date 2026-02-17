@@ -147,6 +147,9 @@ env = [
     'SPOTIFY_CLIENT_SECRET=dummy-client-secret',
     'SPOTIFY_CLIENT_REDIRECT_URI=http://127.0.0.1:8000/api/v1/spotify/callback',
 ]
+filterwarnings = [
+    "always",  # Equivalent to -W always
+]
 
 [tool.coverage.run]
 source = [

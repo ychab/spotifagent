@@ -6,10 +6,6 @@ This quick and dirty document just list the roadmap tasks.
 
 - replace poetry by UV?
 
-## Tests
-
-- add warning log enabled for deprecated features?
-
 ## Entities
 
 ### Music
