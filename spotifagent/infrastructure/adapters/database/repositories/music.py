@@ -1,6 +1,8 @@
 import uuid
 from typing import Any
 
+from sqlalchemy import ColumnElement
+from sqlalchemy import and_
 from sqlalchemy import delete
 from sqlalchemy import or_
 from sqlalchemy import select
@@ -82,14 +84,25 @@ class TrackRepository(TrackRepositoryPort):
             batch_size=batch_size,
         )
 
-    async def purge(self, user_id: uuid.UUID, is_top: bool = False, is_saved: bool = False) -> int:
+    async def purge(
+        self,
+        user_id: uuid.UUID,
+        is_top: bool = False,
+        is_saved: bool = False,
+        is_playlist: bool = False,
+    ) -> int:
         conditions = [TrackModel.user_id == user_id]
-        if is_top and is_saved:
-            conditions.append(or_(TrackModel.is_top.is_(True), TrackModel.is_saved.is_(True)))
-        elif is_top:
-            conditions.append(TrackModel.is_top.is_(True))
-        elif is_saved:
-            conditions.append(TrackModel.is_saved.is_(True))
+
+        or_filters: list[ColumnElement[bool]] = []
+        if is_top:
+            or_filters.append(TrackModel.is_top.is_(True))
+        if is_saved:
+            or_filters.append(TrackModel.is_saved.is_(True))
+        if is_playlist:
+            or_filters.append(and_(TrackModel.is_top.is_(False), TrackModel.is_saved.is_(False)))
+
+        if or_filters:
+            conditions.append(or_(*or_filters))
 
         stmt = delete(TrackModel).where(*conditions)
         result = await self.session.execute(stmt)
