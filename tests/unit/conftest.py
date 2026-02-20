@@ -57,14 +57,6 @@ def mock_track_repository() -> mock.AsyncMock:
     return mock.AsyncMock(spec=TrackRepositoryPort)
 
 
-# --- Client Mocks ---
-
-
-@pytest.fixture
-def mock_spotify_client() -> mock.AsyncMock:
-    return mock.AsyncMock(spec=SpotifyClientPort)
-
-
 # --- Entity Mocks ---
 
 
@@ -76,3 +68,14 @@ def user(request: pytest.FixtureRequest) -> User:
 @pytest.fixture
 def token_state(request: pytest.FixtureRequest) -> SpotifyTokenState:
     return SpotifyTokenStateFactory.build(**getattr(request, "param", {}))
+
+
+# --- Client Mocks ---
+
+
+@pytest.fixture
+def mock_spotify_client(token_state: SpotifyTokenState) -> mock.AsyncMock:
+    return mock.AsyncMock(
+        spec=SpotifyClientPort,
+        refresh_access_token=mock.AsyncMock(return_value=token_state),
+    )

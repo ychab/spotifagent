@@ -31,7 +31,7 @@ class TestSpotifyOauthCallbackUseCase:
         httpx_mock: HTTPXMock,
     ) -> None:
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             json={
                 "token_type": token_state.token_type,
@@ -73,7 +73,7 @@ class TestSpotifyOauthCallbackUseCase:
         httpx_mock: HTTPXMock,
     ) -> None:
         httpx_mock.add_response(
-            url=str(spotify_client.TOKEN_ENDPOINT),
+            url=str(spotify_client.token_endpoint),
             method="POST",
             json={
                 "token_type": token_state.token_type,

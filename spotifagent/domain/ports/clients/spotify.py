@@ -11,6 +11,10 @@ from spotifagent.domain.entities.spotify import SpotifyTokenState
 class SpotifyClientPort(ABC):
     """Port interface for Spotify user API client."""
 
+    @property
+    @abstractmethod
+    def token_endpoint(self) -> HttpUrl: ...
+
     @abstractmethod
     def get_authorization_url(self, scopes: list[SpotifyScope], state: str) -> tuple[HttpUrl, str]:
         """Generate OAuth authorization URL."""

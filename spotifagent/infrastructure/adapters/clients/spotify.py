@@ -64,6 +64,10 @@ class SpotifyClientAdapter(SpotifyClientPort):
         encoded = base64.b64encode(credentials.encode()).decode()
         return f"Basic {encoded}"
 
+    @property
+    def token_endpoint(self) -> HttpUrl:
+        return self.TOKEN_ENDPOINT
+
     def get_authorization_url(self, scopes: list[SpotifyScope], state: str) -> tuple[HttpUrl, str]:
         params = {
             "client_id": self.client_id,
@@ -77,7 +81,7 @@ class SpotifyClientAdapter(SpotifyClientPort):
 
     async def exchange_code_for_token(self, code: str) -> SpotifyTokenState:
         response = await self._client.post(
-            str(self.TOKEN_ENDPOINT),
+            str(self.token_endpoint),
             headers={
                 "Authorization": self._get_basic_auth_header(),
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -94,7 +98,7 @@ class SpotifyClientAdapter(SpotifyClientPort):
 
     async def refresh_access_token(self, refresh_token: str) -> SpotifyTokenState:
         response = await self._client.post(
-            str(self.TOKEN_ENDPOINT),
+            str(self.token_endpoint),
             headers={
                 "Authorization": self._get_basic_auth_header(),
                 "Content-Type": "application/x-www-form-urlencoded",

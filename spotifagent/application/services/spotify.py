@@ -23,6 +23,7 @@ from spotifagent.domain.exceptions import SpotifyAccountNotFoundError
 from spotifagent.domain.exceptions import SpotifyPageValidationError
 from spotifagent.domain.ports.clients.spotify import SpotifyClientPort
 from spotifagent.domain.ports.repositories.spotify import SpotifyAccountRepositoryPort
+from spotifagent.infrastructure.config.settings.app import app_settings
 
 TimeRange = Literal["short_term", "medium_term", "long_term"]
 
@@ -65,10 +66,15 @@ class SpotifyUserSession:
         user: User,
         spotify_account_repository: SpotifyAccountRepositoryPort,
         spotify_client: SpotifyClientPort,
+        max_concurrency: int = app_settings.SYNC_SEMAPHORE_MAX_CONCURRENCY,
     ) -> None:
         self.user = user
         self.spotify_account_repository = spotify_account_repository
         self.spotify_client = spotify_client
+        self.max_concurrency = max_concurrency
+
+        self._is_token_refreshed: bool = False
+        self._refresh_lock: asyncio.Lock = asyncio.Lock()
 
     # -------------------------------------------------------------------------
     # Public API
@@ -113,9 +119,16 @@ class SpotifyUserSession:
         )
         logger.info(f"Found {len(playlists)} playlists. Fetching tracks...")
 
-        # Fetch in parallel all playlist's tracks.
+        # Use a Semaphore to limit concurrent playlist fetching to avoid rate limits and overwhelming resources.
+        semaphore = asyncio.Semaphore(self.max_concurrency)
+
+        async def _fetch_with_semaphore(playlist: SpotifyPlaylist) -> list[Track]:
+            async with semaphore:
+                return await self._fetch_playlist_tracks(playlist, limit)
+
+        # Fetch in parallel all playlist's tracks with a semaphore.
         async with asyncio.TaskGroup() as tg:
-            tasks = [tg.create_task(self._fetch_playlist_tracks(playlist, limit)) for playlist in playlists]
+            tasks = [tg.create_task(_fetch_with_semaphore(playlist)) for playlist in playlists]
 
         # Gather all tracks first.
         tracks = [track for task in tasks for track in task.result()]
@@ -125,6 +138,33 @@ class SpotifyUserSession:
     # -------------------------------------------------------------------------
     # Core Logic
     # -------------------------------------------------------------------------
+
+    async def _refresh_token(self) -> None:
+        # Double-check locking pattern to be safe against concurrency
+        if self._is_token_refreshed:
+            return
+
+        async with self._refresh_lock:
+            # Check again inside lock
+            if self._is_token_refreshed:
+                return
+
+            token_state = await self.spotify_client.refresh_access_token(self.user.spotify_token_state.refresh_token)
+
+            if token_state.access_token != self.user.spotify_token_state.access_token:
+                # Update the token state in DB.
+                await self.spotify_account_repository.update(
+                    user_id=self.user.id,
+                    spotify_account_data=token_state.to_user_update(),
+                )
+                # Update also the token state in memory.
+                if self.user.spotify_account:  # pragma: no branch
+                    self.user.spotify_account.token_type = token_state.token_type
+                    self.user.spotify_account.token_access = token_state.access_token
+                    self.user.spotify_account.token_refresh = token_state.refresh_token
+                    self.user.spotify_account.token_expires_at = token_state.expires_at
+
+            self._is_token_refreshed = True
 
     async def _fetch_playlist_tracks(self, playlist: SpotifyPlaylist, limit: int) -> list[Track]:
         tracks: list[Track] = []
@@ -197,20 +237,16 @@ class SpotifyUserSession:
         params: dict[str, Any] | None = None,
         json_data: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        response_data, token_state = await self.spotify_client.make_user_api_call(
+        if not self._is_token_refreshed:
+            await self._refresh_token()
+
+        response_data, _ = await self.spotify_client.make_user_api_call(
             method=method,
             endpoint=endpoint,
             token_state=self.user.spotify_token_state,
             params=params,
             json_data=json_data,
         )
-
-        current_token = self.user.spotify_account.token_access if self.user.spotify_account else None
-        if current_token and token_state.access_token != current_token:
-            await self.spotify_account_repository.update(
-                user_id=self.user.id, spotify_account_data=token_state.to_user_update()
-            )
-
         return response_data
 
     # -------------------------------------------------------------------------

@@ -186,17 +186,27 @@ class TestSpotifyUserSession:
         ]
         mock_spotify_client.make_user_api_call.side_effect = side_effects
 
-    async def test__execute_request__persists_new_token(
+    async def test__execute_request__refreshed_token(
         self,
         spotify_user_session: SpotifyUserSession,
+        user: User,
         token_state: SpotifyTokenState,
         mock_spotify_client: mock.AsyncMock,
         mock_spotify_account_repository: mock.AsyncMock,
     ) -> None:
+        assert user.spotify_account is not None
+
         mock_spotify_client.make_user_api_call.return_value = ({"data": "ok"}, token_state)
 
         await spotify_user_session._execute_request("GET", "/test")
 
+        # Check that token state is refresh in memory.
+        assert user.spotify_account.token_type == token_state.token_type
+        assert user.spotify_account.token_access == token_state.access_token
+        assert user.spotify_account.token_refresh == token_state.refresh_token
+        assert user.spotify_account.token_expires_at == token_state.expires_at
+
+        # Check that token state is refresh in DB.
         mock_spotify_account_repository.update.assert_called_once_with(
             user_id=spotify_user_session.user.id,
             spotify_account_data=SpotifyAccountUpdate(
@@ -207,7 +217,7 @@ class TestSpotifyUserSession:
             ),
         )
 
-    async def test__execute_request__no_persistence_if_unchanged(
+    async def test__execute_request__no_refreshed_token(
         self,
         spotify_user_session: SpotifyUserSession,
         user: User,
@@ -217,10 +227,15 @@ class TestSpotifyUserSession:
         assert user.spotify_account is not None
 
         token_state_unchanged = SpotifyTokenStateFactory.build(access_token=user.spotify_account.token_access)
+        mock_spotify_client.refresh_access_token.return_value = token_state_unchanged
         mock_spotify_client.make_user_api_call.return_value = ({"data": "ok"}, token_state_unchanged)
 
         await spotify_user_session._execute_request("GET", "/test")
 
+        # Check that token state wasn't refreshed in memory.
+        assert user.spotify_account.token_access == token_state_unchanged.access_token
+
+        # Check that DB have not been updated.
         mock_spotify_account_repository.update.assert_not_called()
 
     @pytest.mark.parametrize("spotify_response", ["top_artists"], indirect=["spotify_response"])
