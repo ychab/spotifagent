@@ -177,7 +177,7 @@ class SpotifyPlaylistTrack(BaseModel):
 class SpotifyPage[T: SpotifyItem | SpotifySavedTrack | SpotifyPlaylistTrack](BaseModel):
     items: Sequence[T]
     total: Annotated[int, Field(ge=0)]
-    limit: Annotated[int, Field(ge=1)]
+    limit: Annotated[int, Field(ge=0)]
     offset: Annotated[int, Field(ge=0)]
 
 
