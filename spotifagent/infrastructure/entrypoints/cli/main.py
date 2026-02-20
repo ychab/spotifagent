@@ -53,3 +53,8 @@ def main(
     ),
 ):
     configure_loggers(level=log_level, handlers=cast(list[LogHandler], log_handlers))
+
+
+# This entrypoint should be used only for local debugging.
+if __name__ == "__main__":
+    app()
