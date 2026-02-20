@@ -19,15 +19,16 @@ from tests.unit.factories.users import UserFactory
 
 
 def paginate_response(
+    token_state: SpotifyTokenState,
     response: dict[str, Any],
     total: int,
     limit: int,
-    token_state: SpotifyTokenState,
+    offset: int = 0,
+    size: int | None = None,
 ) -> list[tuple[dict[str, Any], SpotifyTokenState]]:
     side_effects = []
 
-    offset: int = 0
-    while offset + limit <= total:
+    while offset + limit <= (size or total):
         response_chunk = copy.deepcopy(response)
         response_chunk["offset"] = offset
         response_chunk["limit"] = limit
@@ -109,10 +110,10 @@ class TestSpotifyUserSession:
         limit: int = params.get("limit", 5)
 
         mock_spotify_client.make_user_api_call.side_effect = paginate_response(
+            token_state=token_state,
             response=spotify_response,
             total=total,
             limit=limit,
-            token_state=token_state,
         )
 
         return total, limit
@@ -120,28 +121,38 @@ class TestSpotifyUserSession:
     @pytest.fixture
     def spotify_response_playlist_items_pages(
         self,
+        request: pytest.FixtureRequest,
         spotify_response_pages: tuple[int, int],
         token_state: SpotifyTokenState,
         mock_spotify_client: mock.AsyncMock,
     ) -> tuple[int, int]:
         side_effects = list(mock_spotify_client.make_user_api_call.side_effect)
 
+        params: dict[str, Any] = getattr(request, "param", {})
+        has_duplicates = params.get("has_duplicates", False)
+
         filepath = ASSETS_DIR / "httpmock" / "spotify" / "playlist_items.json"
         spotify_response = json.loads(filepath.read_text())
 
-        total: int = 10
         playlist_total = spotify_response_pages[0]
-        _, limit = spotify_response_pages
+        playlist_limit = spotify_response_pages[1]
+        total: int = playlist_limit * 3
+        offset: int = 0
         for _ in range(playlist_total):
             side_effects += paginate_response(
+                token_state=token_state,
                 response=spotify_response,
                 total=total,
-                limit=limit,
-                token_state=token_state,
+                limit=playlist_limit,
+                offset=offset,
+                size=total + offset,
             )
 
+            if not has_duplicates:
+                offset += total
+
         mock_spotify_client.make_user_api_call.side_effect = side_effects
-        return total, limit
+        return total, playlist_limit
 
     async def test__execute_request__persists_new_token(
         self,
@@ -292,10 +303,10 @@ class TestSpotifyUserSession:
 
     @pytest.mark.parametrize(
         ("spotify_response", "spotify_response_pages"),
-        [("playlists", {"total": 6, "limit": 2})],
+        [("playlists", {"total": 4, "limit": 2})],
         indirect=["spotify_response", "spotify_response_pages"],
     )
-    async def test__get_playlist_tracks__nominal(
+    async def test__get_playlist_tracks__duplicate__none(
         self,
         spotify_user_session: SpotifyUserSession,
         spotify_response: dict[str, Any],
@@ -311,27 +322,74 @@ class TestSpotifyUserSession:
         track_first = tracks[0]
         assert track_first.id is not None
         assert track_first.user_id == spotify_user_session.user.id
-        assert track_first.name == "A Buenaventura"
-        assert track_first.popularity == 4
+        assert track_first.name == "El Preso"
+        assert track_first.popularity == 0
         assert track_first.is_saved is False
         assert track_first.is_top is False
         assert track_first.top_position is None
         assert len(track_first.artists) == 1
-        assert track_first.artists[0].provider_id == "6DGyKmbV7zJrnjlNmpA0j9"
-        assert track_first.artists[0].name == "Piper Pimienta"
+        assert track_first.artists[0].provider_id == "5aAlzehdUM14I4ppq24Xob"
+        assert track_first.artists[0].name == "Fruko Y Sus Tesos"
         assert track_first.provider == MusicProvider.SPOTIFY
-        assert track_first.provider_id == "3L1kaOVoLhNphFfByd5b5m"
+        assert track_first.provider_id == "69LfSVCs3xfpwLiS6c0q4E"
 
         track_last = tracks[-1]
         assert track_last.id is not None
         assert track_last.user_id == spotify_user_session.user.id
-        assert track_last.name == "Mía"
-        assert track_last.popularity == 69
+        assert track_last.name == "Con la Punta del Pie"
+        assert track_last.popularity == 56
         assert track_last.is_saved is False
         assert track_last.is_top is False
         assert track_last.top_position is None
         assert len(track_last.artists) == 1
-        assert track_last.artists[0].provider_id == "5Wg6XnPTp0xXxFCjywwR9I"
-        assert track_last.artists[0].name == "Eddie Santiago"
+        assert track_last.artists[0].provider_id == "4dCNiyQXmtiWA157q3uFyj"
+        assert track_last.artists[0].name == "La Gloria Matancera"
         assert track_last.provider == MusicProvider.SPOTIFY
-        assert track_last.provider_id == "6HJCGXNww93AIaaxUb7C3O"
+        assert track_last.provider_id == "4rt2zpNhFBayp948Pi6liZ"
+
+    @pytest.mark.parametrize(
+        ("spotify_response", "spotify_response_pages", "spotify_response_playlist_items_pages"),
+        [("playlists", {"total": 4, "limit": 2}, {"has_duplicates": True})],
+        indirect=["spotify_response", "spotify_response_pages", "spotify_response_playlist_items_pages"],
+    )
+    async def test__get_playlist_tracks__duplicate(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        spotify_response_pages: tuple[int, int],
+        spotify_response_playlist_items_pages: tuple[int, int],
+    ) -> None:
+        playlist_tracks_total = spotify_response_playlist_items_pages[0]
+
+        tracks = await spotify_user_session.get_playlist_tracks(limit=spotify_response_pages[1])
+        assert len(tracks) == playlist_tracks_total
+
+        track_first = tracks[0]
+        assert track_first.id is not None
+        assert track_first.user_id == spotify_user_session.user.id
+        assert track_first.name == "El Preso"
+        assert track_first.popularity == 0
+        assert track_first.is_saved is False
+        assert track_first.is_top is False
+        assert track_first.top_position is None
+        assert len(track_first.artists) == 1
+        assert track_first.artists[0].provider_id == "5aAlzehdUM14I4ppq24Xob"
+        assert track_first.artists[0].name == "Fruko Y Sus Tesos"
+        assert track_first.provider == MusicProvider.SPOTIFY
+        assert track_first.provider_id == "69LfSVCs3xfpwLiS6c0q4E"
+
+        track_last = tracks[-1]
+        assert track_last.id is not None
+        assert track_last.user_id == spotify_user_session.user.id
+        assert track_last.name == "Micaela"
+        assert track_last.popularity == 54
+        assert track_last.is_saved is False
+        assert track_last.is_top is False
+        assert track_last.top_position is None
+        assert len(track_last.artists) == 2
+        assert track_last.artists[0].provider_id == "34qU0b0yRjEzRJtknerEDS"
+        assert track_last.artists[0].name == "Sonora Carruseles"
+        assert track_last.artists[1].provider_id == "125qXSgsP3irn2SEE6rpor"
+        assert track_last.artists[1].name == "Luis Florez"
+        assert track_last.provider == MusicProvider.SPOTIFY
+        assert track_last.provider_id == "1m3paVx65imhvCjPx505Oy"

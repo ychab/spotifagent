@@ -114,7 +114,10 @@ class SpotifyUserSession:
         async with asyncio.TaskGroup() as tg:
             tasks = [tg.create_task(self._fetch_playlist_tracks(playlist, limit)) for playlist in playlists]
 
-        return [track for task in tasks for track in task.result()]
+        # Gather all tracks first.
+        tracks = [track for task in tasks for track in task.result()]
+        # Then remove duplicates due to multiple playlists with the same tracks.
+        return list({track.provider_id: track for track in tracks}.values())
 
     # -------------------------------------------------------------------------
     # Core Logic

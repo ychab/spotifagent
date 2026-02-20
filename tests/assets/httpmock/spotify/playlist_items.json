@@ -1,46 +1,690 @@
 {
-  "limit": 10,
+  "limit": 50,
   "items": [
     {
       "item": {
         "artists": [
           {
-            "name": "Piper Pimienta",
-            "id": "6DGyKmbV7zJrnjlNmpA0j9"
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/3L1kaOVoLhNphFfByd5b5m",
-        "name": "A Buenaventura",
-        "popularity": 4,
-        "id": "3L1kaOVoLhNphFfByd5b5m"
+        "href": "https://api.spotify.com/v1/tracks/69LfSVCs3xfpwLiS6c0q4E",
+        "name": "El Preso",
+        "popularity": 0,
+        "id": "69LfSVCs3xfpwLiS6c0q4E"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "Piper Pimienta",
-            "id": "6DGyKmbV7zJrnjlNmpA0j9"
+            "name": "Grupo Niche",
+            "id": "1zng9JZpblpk48IPceRWs8"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/7CmDeBNvuklb5WvErkDkTj",
-        "name": "Yo Te Canto",
-        "popularity": 2,
-        "id": "7CmDeBNvuklb5WvErkDkTj"
+        "href": "https://api.spotify.com/v1/tracks/7J5pB49l9ycy9ImB6D9hu0",
+        "name": "La Negra No Quiere",
+        "popularity": 20,
+        "id": "7J5pB49l9ycy9ImB6D9hu0"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "La Dimensión Latina",
-            "id": "5wb8MfrYdUEBSg71SKD0A5"
+            "name": "Guayacán Orquesta",
+            "id": "2pZ81eCkqxemIjqqfE1fhE"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/04vVrWJeKNSj3rS71Blgio",
-        "name": "Mayoral",
+        "href": "https://api.spotify.com/v1/tracks/17Sfr3T1chYPGcmM4VlhCh",
+        "name": "Oiga, Mire, Vea",
         "popularity": 1,
-        "id": "04vVrWJeKNSj3rS71Blgio"
+        "id": "17Sfr3T1chYPGcmM4VlhCh"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/15DUcGdD7BnGEJW6cZmtbd",
+        "name": "La Noche",
+        "popularity": 18,
+        "id": "15DUcGdD7BnGEJW6cZmtbd"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Grupo Niche",
+            "id": "1zng9JZpblpk48IPceRWs8"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/6IIdauPFRfFJVuDskGRbcF",
+        "name": "Listo Medellín",
+        "popularity": 43,
+        "id": "6IIdauPFRfFJVuDskGRbcF"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Sonora Carruseles",
+            "id": "34qU0b0yRjEzRJtknerEDS"
+          },
+          {
+            "name": "Luis Florez",
+            "id": "125qXSgsP3irn2SEE6rpor"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/1m3paVx65imhvCjPx505Oy",
+        "name": "Micaela",
+        "popularity": 54,
+        "id": "1m3paVx65imhvCjPx505Oy"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Nelson Y Sus Estrellas",
+            "id": "5SRwYMyavJCNT2AdVMpPgi"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/7gzSnFuwQE8MqMCiOLOMz6",
+        "name": "El Forastero",
+        "popularity": 44,
+        "id": "7gzSnFuwQE8MqMCiOLOMz6"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/7eOSOc9z6gcsGBznsg5mk3",
+        "name": "El Arbol",
+        "popularity": 22,
+        "id": "7eOSOc9z6gcsGBznsg5mk3"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Grupo Niche",
+            "id": "1zng9JZpblpk48IPceRWs8"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/29iVbAneOn1ZGW4zzrBlUb",
+        "name": "Cali Ají",
+        "popularity": 50,
+        "id": "29iVbAneOn1ZGW4zzrBlUb"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3v32VtMTRZbIQJUFsQpeJD",
+        "name": "Rebelión",
+        "popularity": 59,
+        "id": "3v32VtMTRZbIQJUFsQpeJD"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Grupo Niche",
+            "id": "1zng9JZpblpk48IPceRWs8"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3SXWtn3YbXOuz6s9LN8LeJ",
+        "name": "Cali Pachanguero",
+        "popularity": 0,
+        "id": "3SXWtn3YbXOuz6s9LN8LeJ"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3MeiLRAUi6GRtb2g37cMCY",
+        "name": "Teresa Vuelve",
+        "popularity": 29,
+        "id": "3MeiLRAUi6GRtb2g37cMCY"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Zumbale Orquesta",
+            "id": "56gZl7fUD6VFekb4fkAz6R"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/5JueYmGJFwJVG4DX2AwH74",
+        "name": "Barranquillera de Puro Corazón",
+        "popularity": 0,
+        "id": "5JueYmGJFwJVG4DX2AwH74"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Celia Cruz",
+            "id": "2weA6hhVqTIN2gSn9PUB9U"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/52IqB6OzcLMRDuW2mAUNq6",
+        "name": "Que Le Den Candela",
+        "popularity": 42,
+        "id": "52IqB6OzcLMRDuW2mAUNq6"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Sonora Carruseles",
+            "id": "34qU0b0yRjEzRJtknerEDS"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/2dhsaoIqvNfJJEyjArAakd",
+        "name": "Al Son de los Cueros",
+        "popularity": 8,
+        "id": "2dhsaoIqvNfJJEyjArAakd"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Eddie Palmieri",
+            "id": "2VviFtXYreO6Zn9n8Ibk6C"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/65kCIrgNhXeufeG2WVmHId",
+        "name": "Vámonos Pa'l Monte",
+        "popularity": 52,
+        "id": "65kCIrgNhXeufeG2WVmHId"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4yQkzBFn3V1IOdx0ic20tx",
+        "name": "En Barranquilla Me Quedo",
+        "popularity": 0,
+        "id": "4yQkzBFn3V1IOdx0ic20tx"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Oscar D'León",
+            "id": "1c84wItoiAe1pEbpJMqUmQ"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/1R8upiSmv7U1rRv0qqvIbS",
+        "name": "Que Bueno Baila Usted",
+        "popularity": 59,
+        "id": "1R8upiSmv7U1rRv0qqvIbS"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4KxCymkhxqbE9KwHAc8Fjl",
+        "name": "Soy Como Soy",
+        "popularity": 8,
+        "id": "4KxCymkhxqbE9KwHAc8Fjl"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/36uEPCVG67162AJswilh8e",
+        "name": "Te Quiero Más",
+        "popularity": 33,
+        "id": "36uEPCVG67162AJswilh8e"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4TedxdAWvmtDCpYY9M6kue",
+        "name": "Cachondea",
+        "popularity": 54,
+        "id": "4TedxdAWvmtDCpYY9M6kue"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/1gnz3Zx3cIrGEWvrS1GIaP",
+        "name": "El Centurión de la Noche",
+        "popularity": 33,
+        "id": "1gnz3Zx3cIrGEWvrS1GIaP"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Nelson Y Sus Estrellas",
+            "id": "5SRwYMyavJCNT2AdVMpPgi"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3KPNyfWQEF6EKAmbHfboZI",
+        "name": "La Sirena",
+        "popularity": 41,
+        "id": "3KPNyfWQEF6EKAmbHfboZI"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "La Gloria Matancera",
+            "id": "4dCNiyQXmtiWA157q3uFyj"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4rt2zpNhFBayp948Pi6liZ",
+        "name": "Con la Punta del Pie",
+        "popularity": 56,
+        "id": "4rt2zpNhFBayp948Pi6liZ"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Eddie Palmieri",
+            "id": "2VviFtXYreO6Zn9n8Ibk6C"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/5HaxWPXfj5b7yZp6r7e6DR",
+        "name": "Palo De Mango",
+        "popularity": 27,
+        "id": "5HaxWPXfj5b7yZp6r7e6DR"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Havana Social Club",
+            "id": "1lmE9SRVePUtPi379Oq32h"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/6z59ZqsYKGl68kQyZd4IJe",
+        "name": "En Casa de Estanislao",
+        "popularity": 0,
+        "id": "6z59ZqsYKGl68kQyZd4IJe"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Willie Colón",
+            "id": "7x5Slu7yTE5icZjNsc3OzW"
+          },
+          {
+            "name": "Héctor Lavoe",
+            "id": "7opp16lU7VM3l2WBdGMYHP"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4rPtnAmfvHkVSCO2KKkiC1",
+        "name": "Ché Ché Colé",
+        "popularity": 59,
+        "id": "4rPtnAmfvHkVSCO2KKkiC1"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/6rsAqgBNLooUcpO060WSv4",
+        "name": "Pa'l Bailador",
+        "popularity": 51,
+        "id": "6rsAqgBNLooUcpO060WSv4"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "The Latin Brothers",
+            "id": "2AiZXMqpVlCDnz3trZbWaK"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3tNBeF02EYs4CgxZtMtyit",
+        "name": "El Son del Caballo",
+        "popularity": 22,
+        "id": "3tNBeF02EYs4CgxZtMtyit"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/6wOXPVXaDWQ8VhBx8knkKA",
+        "name": "Tania",
+        "popularity": 23,
+        "id": "6wOXPVXaDWQ8VhBx8knkKA"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/22jgw0WqjF05f22pmXOTC6",
+        "name": "La Guerra de los Callados",
+        "popularity": 27,
+        "id": "22jgw0WqjF05f22pmXOTC6"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          },
+          {
+            "name": "La Verdad",
+            "id": "54h3j85gGrqCsfK8D0RuUM"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/4SdepQBtfgld2cfjtpiM8L",
+        "name": "Simula Timula",
+        "popularity": 16,
+        "id": "4SdepQBtfgld2cfjtpiM8L"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Cuba",
+            "id": "5MlfccEEOw6kihsT8eQtbh"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3IcHmv2bqsvIbft9v23y3m",
+        "name": "Yo Vine Pa' Ver",
+        "popularity": 32,
+        "id": "3IcHmv2bqsvIbft9v23y3m"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Joe Cuba",
+            "id": "5MlfccEEOw6kihsT8eQtbh"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3VGxvsU6OSdO2lWuCWcy1p",
+        "name": "A Las Seis",
+        "popularity": 32,
+        "id": "3VGxvsU6OSdO2lWuCWcy1p"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          },
+          {
+            "name": "Joe Arroyo",
+            "id": "7BFnoFhJjLWcsqmN3Hizqg"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/2MGT7BNwjf3c6DbhXqBaW9",
+        "name": "Manyoma",
+        "popularity": 32,
+        "id": "2MGT7BNwjf3c6DbhXqBaW9"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "El Gran Combo De Puerto Rico",
+            "id": "6nnspeopmJAG07xOxHmqTu"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/1IcnHHfeAkdc88LybFWwb9",
+        "name": "Me Liberé",
+        "popularity": 64,
+        "id": "1IcnHHfeAkdc88LybFWwb9"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Oscar D'León",
+            "id": "1c84wItoiAe1pEbpJMqUmQ"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/1xTtQuHbtAh6WvzZZNXbIu",
+        "name": "El Manicero",
+        "popularity": 46,
+        "id": "1xTtQuHbtAh6WvzZZNXbIu"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Fruko Y Sus Tesos",
+            "id": "5aAlzehdUM14I4ppq24Xob"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/0z1jqSzPEiblIxozrI9Tto",
+        "name": "Cachondea",
+        "popularity": 0,
+        "id": "0z1jqSzPEiblIxozrI9Tto"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Billo's Caracas Boys",
+            "id": "38zyliF0xdJKS7k1BIEuL6"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3k2qOgZygd9YxrYGqkK6Dj",
+        "name": "Por Las Buenas",
+        "popularity": 58,
+        "id": "3k2qOgZygd9YxrYGqkK6Dj"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Sonora Carruseles",
+            "id": "34qU0b0yRjEzRJtknerEDS"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/66QcNLZRYW3ywFVXrHdeZj",
+        "name": "Mosaico Boogaloo: Mambo Batiri, Me Gusta Boogaloo, Regalo para Ti",
+        "popularity": 7,
+        "id": "66QcNLZRYW3ywFVXrHdeZj"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Pete Rodriguez",
+            "id": "76KY8JsK3XMQkjDiRZVprS"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/0TGLRGD4ZRp6sM5jy8EOjR",
+        "name": "Soy El Rey",
+        "popularity": 52,
+        "id": "0TGLRGD4ZRp6sM5jy8EOjR"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "La Playa Sextet",
+            "id": "2sOjbVJo60mStZl19NDcUn"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/6gSIqtF1Fas19JwRgYCrgm",
+        "name": "Mueve La Cadera",
+        "popularity": 29,
+        "id": "6gSIqtF1Fas19JwRgYCrgm"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Eddie Palmieri",
+            "id": "2VviFtXYreO6Zn9n8Ibk6C"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/5RQpdEGQXehE1P95XzghLf",
+        "name": "Ay Qué Rico",
+        "popularity": 39,
+        "id": "5RQpdEGQXehE1P95XzghLf"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "La-33",
+            "id": "1Y2yzHPbBWZouNYTOGFq7u"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/3a6n2q7NcrAwgrZT3UOW1K",
+        "name": "Que Rico Boogaloo",
+        "popularity": 42,
+        "id": "3a6n2q7NcrAwgrZT3UOW1K"
+      }
+    },
+    {
+      "item": {
+        "artists": [
+          {
+            "name": "Mon Rivera",
+            "id": "0XnUt52wINQV3RGEWCeDFx"
+          }
+        ],
+        "href": "https://api.spotify.com/v1/tracks/2jBe0JwHUxPi02bvSigPdg",
+        "name": "Lluvia con Nieve",
+        "popularity": 58,
+        "id": "2jBe0JwHUxPi02bvSigPdg"
       }
     },
     {
@@ -49,99 +693,79 @@
           {
             "name": "La Dimensión Latina",
             "id": "5wb8MfrYdUEBSg71SKD0A5"
+          },
+          {
+            "name": "Oscar D'León",
+            "id": "1c84wItoiAe1pEbpJMqUmQ"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/4oZKuMEdnvG7tBLQy4ekxm",
-        "name": "Suena el Cuero",
-        "popularity": 6,
-        "id": "4oZKuMEdnvG7tBLQy4ekxm"
+        "href": "https://api.spotify.com/v1/tracks/2naqSVQHgiaoEpxtkVOhmK",
+        "name": "Llorarás",
+        "popularity": 67,
+        "id": "2naqSVQHgiaoEpxtkVOhmK"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "Piper Pimienta",
-            "id": "6DGyKmbV7zJrnjlNmpA0j9"
+            "name": "La Playa Sextet",
+            "id": "2sOjbVJo60mStZl19NDcUn"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/3yxIS7EnzaWW6ZT7P9DoHs",
-        "name": "Por Un Solo Camino",
-        "popularity": 12,
-        "id": "3yxIS7EnzaWW6ZT7P9DoHs"
+        "href": "https://api.spotify.com/v1/tracks/0q5cQhAc93ntXpijxPE6jQ",
+        "name": "Con Mi Guaguancó",
+        "popularity": 43,
+        "id": "0q5cQhAc93ntXpijxPE6jQ"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "Piper Pimienta",
-            "id": "6DGyKmbV7zJrnjlNmpA0j9"
+            "name": "Ray Barretto",
+            "id": "2h4ndKS2vRWeFLpq8ARu0D"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/1yTP6U5wqlidZnb2rODrNo",
-        "name": "Vuelve El Verano",
-        "popularity": 4,
-        "id": "1yTP6U5wqlidZnb2rODrNo"
+        "href": "https://api.spotify.com/v1/tracks/5jK21S6FXKQqjlK4vTBiMd",
+        "name": "El Watusi",
+        "popularity": 49,
+        "id": "5jK21S6FXKQqjlK4vTBiMd"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "Jerry Rivera",
-            "id": "7wOZy3KdFVVINgNFFxkxwO"
+            "name": "Los Naranjos",
+            "id": "1sSJKXRVQ4JzKhfVuurnKs"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/7t5cskTjWtXVQ6h1yI69op",
-        "name": "Qué Hay de Malo",
-        "popularity": 65,
-        "id": "7t5cskTjWtXVQ6h1yI69op"
+        "href": "https://api.spotify.com/v1/tracks/2xlmTTOvHHLRurnfQCzzHS",
+        "name": "Camina Como Chencha",
+        "popularity": 38,
+        "id": "2xlmTTOvHHLRurnfQCzzHS"
       }
     },
     {
       "item": {
         "artists": [
           {
-            "name": "Jerry Rivera",
-            "id": "7wOZy3KdFVVINgNFFxkxwO"
-          }
-        ],
-        "href": "https://api.spotify.com/v1/tracks/3WLXf7K7mIGEBtFq41afce",
-        "name": "Amores Como el Nuestro",
-        "popularity": 65,
-        "id": "3WLXf7K7mIGEBtFq41afce"
-      }
-    },
-    {
-      "item": {
-        "artists": [
+            "name": "Cheo Feliciano",
+            "id": "1Ypa8o8muvDcgOt1YYtcOC"
+          },
           {
-            "name": "Eddie Santiago",
-            "id": "5Wg6XnPTp0xXxFCjywwR9I"
+            "name": "Joe Cuba Sextet",
+            "id": "7glnjTMVq4r8iNugFbuIqj"
           }
         ],
-        "href": "https://api.spotify.com/v1/tracks/3SzJ4qlIjYkSO7bh0oKTXA",
-        "name": "Lluvia",
-        "popularity": 73,
-        "id": "3SzJ4qlIjYkSO7bh0oKTXA"
-      }
-    },
-    {
-      "item": {
-        "artists": [
-          {
-            "name": "Eddie Santiago",
-            "id": "5Wg6XnPTp0xXxFCjywwR9I"
-          }
-        ],
-        "href": "https://api.spotify.com/v1/tracks/6HJCGXNww93AIaaxUb7C3O",
-        "name": "Mía",
-        "popularity": 69,
-        "id": "6HJCGXNww93AIaaxUb7C3O"
+        "href": "https://api.spotify.com/v1/tracks/4nB0lLsweZhCQQYIMnFjSB",
+        "name": "El Ratón",
+        "popularity": 55,
+        "id": "4nB0lLsweZhCQQYIMnFjSB"
       }
     }
   ],
-  "total": 180,
+  "total": 144,
   "offset": 0
 }
