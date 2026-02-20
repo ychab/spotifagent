@@ -69,6 +69,11 @@ def sync(
         "--purge-track-saved/--no-purge-track-saved",
         help="Whether to purge user's saved tracks",
     ),
+    purge_track_playlist: bool = typer.Option(
+        False,
+        "--purge-track-playlist/--no-purge-track-playlist",
+        help="Whether to purge user's playlist tracks",
+    ),
     sync: bool = typer.Option(
         False,
         "--sync/--no-sync",
@@ -88,6 +93,11 @@ def sync(
         False,
         "--sync-track-saved/--no-sync-track-saved",
         help="Whether to sync user's saved tracks",
+    ),
+    sync_track_playlist: bool = typer.Option(
+        False,
+        "--sync-track-playlist/--no-sync-track-playlist",
+        help="Whether to sync user's playlist tracks",
     ),
     page_limit: int = typer.Option(
         50,
@@ -119,10 +129,12 @@ def sync(
         purge_artist_top=purge_artist_top,
         purge_track_top=purge_track_top,
         purge_track_saved=purge_track_saved,
+        purge_track_playlist=purge_track_playlist,
         sync=sync,
         sync_artist_top=sync_artist_top,
         sync_track_top=sync_track_top,
         sync_track_saved=sync_track_saved,
+        sync_track_playlist=sync_track_playlist,
         page_limit=page_limit,
         time_range=time_range,
         batch_size=batch_size,
