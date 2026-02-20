@@ -2,6 +2,8 @@ import uuid
 from typing import Any
 from typing import cast
 
+from sqlalchemy import select
+
 from polyfactory import Use
 from polyfactory.decorators import post_generated
 from slugify import slugify
@@ -64,3 +66,19 @@ class TrackModelFactory(BaseMusicItemModelFactory[Track]):
             for _ in range(BaseMusicItemModelFactory.__faker__.random_int(min=1, max=3))
         ]
     )
+
+    @classmethod
+    async def get_or_create(cls, user_id: uuid.UUID, provider_id: str, **kwargs: Any) -> tuple[Track, bool]:
+        if not user_id or not provider_id:
+            raise ValueError("You must provide 'user_id' and 'provider_id' for uniqueness.")
+
+        session = cls.__async_session__
+        stmt = select(cls.__model__).filter_by(user_id=user_id, provider_id=provider_id)
+        result = await session.execute(stmt)  # type: ignore[union-attr]
+        instance = result.scalar_one_or_none()
+
+        if instance:
+            return instance, False
+
+        instance = await cls.create_async(user_id=user_id, provider_id=provider_id, **kwargs)
+        return instance, True
