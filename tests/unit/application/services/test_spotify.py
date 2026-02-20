@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import json
 import logging
@@ -13,6 +14,7 @@ from spotifagent.domain.entities.spotify import SpotifyAccountUpdate
 from spotifagent.domain.entities.spotify import SpotifyTokenState
 from spotifagent.domain.entities.users import User
 from spotifagent.domain.exceptions import SpotifyAccountNotFoundError
+from spotifagent.infrastructure.config.settings.app import app_settings
 
 from tests import ASSETS_DIR
 from tests.unit.factories.spotify import SpotifyTokenStateFactory
@@ -80,9 +82,16 @@ class TestSpotifyUserSession:
         return UserFactory.build(with_spotify_account=True)
 
     @pytest.fixture
+    def patch_max_concurrency(self, monkeypatch: pytest.MonkeyPatch) -> int:
+        max_concurrency: int = 10
+        monkeypatch.setattr(app_settings, "SYNC_SEMAPHORE_MAX_CONCURRENCY", max_concurrency)
+        return max_concurrency
+
+    @pytest.fixture
     def spotify_user_session(
         self,
         user: User,
+        patch_max_concurrency: int,
         mock_spotify_account_repository: mock.AsyncMock,
         mock_spotify_client: mock.AsyncMock,
     ) -> SpotifyUserSession:
@@ -90,6 +99,7 @@ class TestSpotifyUserSession:
             user=user,
             spotify_account_repository=mock_spotify_account_repository,
             spotify_client=mock_spotify_client,
+            max_concurrency=patch_max_concurrency,
         )
 
     @pytest.fixture
@@ -237,6 +247,48 @@ class TestSpotifyUserSession:
 
         # Check that DB have not been updated.
         mock_spotify_account_repository.update.assert_not_called()
+
+    async def test__refresh_token__already_refreshed(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        mock_spotify_client: mock.AsyncMock,
+        mock_spotify_account_repository: mock.AsyncMock,
+    ) -> None:
+        spotify_user_session._is_token_refreshed = True
+
+        await spotify_user_session._refresh_token()
+
+        mock_spotify_client.refresh_access_token.assert_not_called()
+        mock_spotify_account_repository.update.assert_not_called()
+
+    async def test__refresh_token__concurrent_calls__executes_once(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        patch_max_concurrency: int,
+        mock_spotify_client: mock.AsyncMock,
+        mock_spotify_account_repository: mock.AsyncMock,
+        token_state: SpotifyTokenState,
+    ) -> None:
+        assert spotify_user_session.user.spotify_account is not None
+
+        new_token_state = SpotifyTokenStateFactory.build()
+
+        async def delayed_refresh(*args, **kwargs):
+            await asyncio.sleep(0.05)  # Simulate network latency
+            return new_token_state
+
+        mock_spotify_client.refresh_access_token.side_effect = delayed_refresh
+
+        # Launch concurrent calls
+        async with asyncio.TaskGroup() as tg:
+            for _ in range(patch_max_concurrency):
+                tg.create_task(spotify_user_session._refresh_token())
+
+        mock_spotify_client.refresh_access_token.assert_called_once()
+        mock_spotify_account_repository.update.assert_called_once()
+
+        assert spotify_user_session._is_token_refreshed is True
+        assert spotify_user_session.user.spotify_account.token_access == new_token_state.access_token
 
     @pytest.mark.parametrize("spotify_response", ["top_artists"], indirect=["spotify_response"])
     async def test__get_top_artists__nominal(
