@@ -4,6 +4,8 @@ from collections.abc import Callable
 from typing import Any
 from typing import Literal
 
+from pydantic import ValidationError
+
 from spotifagent.domain.entities.music import Artist
 from spotifagent.domain.entities.music import BaseMusicItem
 from spotifagent.domain.entities.music import Track
@@ -18,6 +20,7 @@ from spotifagent.domain.entities.spotify import SpotifyTopTrackPage
 from spotifagent.domain.entities.spotify import SpotifyTrack
 from spotifagent.domain.entities.users import User
 from spotifagent.domain.exceptions import SpotifyAccountNotFoundError
+from spotifagent.domain.exceptions import SpotifyPageValidationError
 from spotifagent.domain.ports.clients.spotify import SpotifyClientPort
 from spotifagent.domain.ports.repositories.spotify import SpotifyAccountRepositoryPort
 
@@ -124,17 +127,26 @@ class SpotifyUserSession:
     # -------------------------------------------------------------------------
 
     async def _fetch_playlist_tracks(self, playlist: SpotifyPlaylist, limit: int) -> list[Track]:
-        return await self._fetch_pages(
-            endpoint=f"/playlists/{playlist.id}/items",
-            page_model=SpotifyPlaylistTrackPage,
-            page_processor=self._extract_playlist_tracks,
-            params={
-                "fields": "total,limit,offset,items(item(id,name,href,popularity,artists(id,name)))",
-                "additional_types": "track",
-            },
-            limit=limit,
-            prefix_log=f"[PlaylistTracks({playlist.name})]",
-        )
+        tracks: list[Track] = []
+
+        try:
+            tracks = await self._fetch_pages(
+                endpoint=f"/playlists/{playlist.id}/items",
+                page_model=SpotifyPlaylistTrackPage,
+                page_processor=self._extract_playlist_tracks,
+                params={
+                    "fields": "total,limit,offset,items(item(id,name,href,popularity,artists(id,name)))",
+                    "additional_types": "track",
+                },
+                limit=limit,
+                prefix_log=f"[PlaylistTracks({playlist.name})]",
+            )
+        except SpotifyPageValidationError as e:
+            # Some playlist pages can return invalid data, like missing ID's.
+            # Indeed, it could happen when manually uploading custom tracks not known by Spotify.
+            logger.error(f"Skip playlist {playlist.name.strip()} with error: {e}")
+
+        return tracks
 
     async def _fetch_pages[SpotifyPageType: SpotifyPage, MusicItemType: BaseMusicItem | SpotifyPlaylist](
         self,
@@ -160,7 +172,14 @@ class SpotifyUserSession:
                     **(params or {}),
                 },
             )
-            page = page_model.model_validate(data)
+
+            try:
+                page = page_model.model_validate(data)
+            except ValidationError as e:
+                raise SpotifyPageValidationError(
+                    f"{prefix_log} - Page validation error on {endpoint} (offset: {offset}): {e}"
+                ) from e
+
             items += page_processor(page, offset)
 
             logger.info(f"{prefix_log} ... processed {offset + limit}/{page.total} ...")

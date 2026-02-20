@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 from typing import Any
 from unittest import mock
 
@@ -153,6 +154,37 @@ class TestSpotifyUserSession:
 
         mock_spotify_client.make_user_api_call.side_effect = side_effects
         return total, playlist_limit
+
+    @pytest.fixture
+    def spotify_response_playlist_items_invalid_pages(
+        self,
+        token_state: SpotifyTokenState,
+        mock_spotify_client: mock.AsyncMock,
+    ) -> None:
+        side_effects = list(mock_spotify_client.make_user_api_call.side_effect)
+
+        side_effects += [
+            (
+                {
+                    "items": [
+                        {
+                            "item": {
+                                "artists": [{"id": None, "name": ""}],
+                                "href": None,
+                                "id": None,
+                                "name": "my-custom-track-which-dont-exists-on-spotify-db",
+                                "popularity": 0,
+                            },
+                        },
+                    ],
+                    "limit": 50,
+                    "offset": 0,
+                    "total": 1,
+                },
+                token_state,
+            ),
+        ]
+        mock_spotify_client.make_user_api_call.side_effect = side_effects
 
     async def test__execute_request__persists_new_token(
         self,
@@ -393,3 +425,30 @@ class TestSpotifyUserSession:
         assert track_last.artists[1].name == "Luis Florez"
         assert track_last.provider == MusicProvider.SPOTIFY
         assert track_last.provider_id == "1m3paVx65imhvCjPx505Oy"
+
+    @pytest.mark.parametrize(
+        ("spotify_response", "spotify_response_pages"),
+        [("playlists", {"total": 1, "limit": 1})],
+        indirect=["spotify_response", "spotify_response_pages"],
+    )
+    async def test__get_playlist_tracks__page_validation_error(
+        self,
+        spotify_user_session: SpotifyUserSession,
+        spotify_response: dict[str, Any],
+        spotify_response_pages: tuple[int, int],
+        spotify_response_playlist_items_invalid_pages: None,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        playlist = spotify_response["items"][0]
+
+        with caplog.at_level(logging.ERROR):
+            tracks = await spotify_user_session.get_playlist_tracks(limit=1)
+        assert len(tracks) == 0
+
+        prefix_log = f"[PlaylistTracks({playlist['name']})]"
+        exc_msg = f"{prefix_log} - Page validation error on /playlists/{playlist['id']}/items (offset: 0): "
+        assert f"Skip playlist {playlist['name'].strip()} with error: {exc_msg}" in caplog.text
+        assert "3 validation errors for SpotifyPlaylistTrackPage" in caplog.text
+        assert "items.0.item.id\n  Input should be a valid string" in caplog.text
+        assert "items.0.item.href\n  URL input should be a string or URL" in caplog.text
+        assert "items.0.item.artists.0.id\n  Input should be a valid string" in caplog.text

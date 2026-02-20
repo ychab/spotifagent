@@ -26,3 +26,7 @@ class SpotifyAccountNotFoundError(Exception):
 
 class SpotifyExchangeCodeError(Exception):
     pass
+
+
+class SpotifyPageValidationError(Exception):
+    pass
