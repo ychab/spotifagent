@@ -1,5 +1,6 @@
 import itertools
 import logging
+from typing import Any
 from unittest import mock
 
 from httpx import HTTPError
@@ -46,6 +47,38 @@ def validation_error() -> ValidationError:
         DummyModel(dummy_field=50)
 
     return exc_info.value
+
+
+class TestSpotifyConfig:
+    @pytest.mark.parametrize(
+        ("attributes", "expected_bool"),
+        [
+            ({}, False),
+            ({"purge": True}, True),
+            ({"purge_artist_top": True}, True),
+            ({"purge_track_top": True}, True),
+            ({"purge_track_saved": True}, True),
+            ({"purge_track_playlist": True}, True),
+        ],
+    )
+    def test_has_purge(self, attributes: dict[str, Any], expected_bool: bool) -> None:
+        config = SyncConfig(**attributes)
+        assert config.has_purge() is expected_bool
+
+    @pytest.mark.parametrize(
+        ("attributes", "expected_bool"),
+        [
+            ({}, False),
+            ({"sync": True}, True),
+            ({"sync_artist_top": True}, True),
+            ({"sync_track_top": True}, True),
+            ({"sync_track_saved": True}, True),
+            ({"sync_track_playlist": True}, True),
+        ],
+    )
+    def test_has_sync(self, attributes: dict[str, Any], expected_bool: bool) -> None:
+        config = SyncConfig(**attributes)
+        assert config.has_sync() is expected_bool
 
 
 class TestSpotifySync:

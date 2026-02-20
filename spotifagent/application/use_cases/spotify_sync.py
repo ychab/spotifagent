@@ -80,7 +80,15 @@ class SyncConfig:
         )
 
     def has_sync(self) -> bool:
-        return any([self.sync, self.sync_artist_top, self.sync_track_top, self.sync_track_saved])
+        return any(
+            [
+                self.sync,
+                self.sync_artist_top,
+                self.sync_track_top,
+                self.sync_track_saved,
+                self.sync_track_playlist,
+            ]
+        )
 
 
 async def spotify_sync(
