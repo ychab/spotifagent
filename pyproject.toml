@@ -119,12 +119,14 @@ DEP002 = [
 
 
 [tool.pytest.ini_options]
+junit_family = "legacy"
 addopts = [
     "--cov=spotifagent",
     "--cov-report=xml",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-branch",
+    "--junitxml=junit.xml",
 ]
 testpaths = ["tests"]
 pythonpath = ["."]

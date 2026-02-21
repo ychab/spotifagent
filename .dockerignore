@@ -9,6 +9,7 @@ tests/
 .pytest_cache/
 .coverage
 coverage.xml
+junit.xml
 htmlcov/
 
 # Development

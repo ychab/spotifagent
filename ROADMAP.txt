@@ -6,10 +6,6 @@ This quick and dirty document just list the roadmap tasks.
 
 - upgrade the version of postgresql?
 
-## CI
-
-Add a github CI integration to run the tests, add badges like coverage, etc
-
 ## Dependencies
 
 - replace poetry by UV?
@@ -19,7 +15,6 @@ Add a github CI integration to run the tests, add badges like coverage, etc
 ### Music
 
 - should we add a relationship between the track with the (top) artist?
-
 
 ## Renaming project
 
@@ -32,7 +27,6 @@ Add a github CI integration to run the tests, add badges like coverage, etc
 ## Sync
 
 - review it for a top level batch handling (to release memory yb saving in DB before) + atomicity?
-- spotify: fetch all playlists to collect all the user's song (to don't get recommendations for them)
 - spotify: import the extended streaming history?
 
 ## Recommendations / Suggestions
