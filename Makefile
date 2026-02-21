@@ -67,9 +67,10 @@ precommit: ## Run pre-commit hooks
 # Versioning
 ############
 
-bump: ## Bump version (options: bump-patch, bump-minor, bump-major, etc.)
-
 BUMP_TARGETS = bump-patch bump-minor bump-major bump-prepatch bump-preminor bump-premajor bump-prerelease
+
+# This "phantom" target exists only to appear in 'make help'
+bump: ## Bump version (options: bump-patch, bump-minor, bump-major, etc.)
 
 .PHONY: $(BUMP_TARGETS) bump
 $(BUMP_TARGETS): bump-%:

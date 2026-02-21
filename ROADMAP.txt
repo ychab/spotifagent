@@ -2,6 +2,10 @@
 
 This quick and dirty document just list the roadmap tasks.
 
+## Docker compose
+
+- upgrade the version of postgresql?
+
 ## CI
 
 Add a github CI integration to run the tests, add badges like coverage, etc
