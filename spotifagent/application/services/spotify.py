@@ -80,6 +80,16 @@ class SpotifyUserSession:
     # Public API
     # -------------------------------------------------------------------------
 
+    # # Function to find Spotify ID for a Last.fm track
+    # async def search(self, track_name: str, artist_name: str) -> str | None:
+    #     query = f"track:{track_name} artist:{artist_name}"
+    #     # Use Spotify Search API: type=track, limit=1
+    #     results = spotify.search(q=query, type='track', limit=1)
+    #
+    #     if results['tracks']['items']:
+    #         return results['tracks']['items'][0]['id']
+    #     return None
+
     async def get_top_artists(self, limit: int = 50, time_range: TimeRange = "long_term") -> list[Artist]:
         return await self._fetch_pages(
             endpoint="/me/top/artists",

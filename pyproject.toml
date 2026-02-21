@@ -148,6 +148,9 @@ env = [
     'SPOTIFY_CLIENT_ID=dummy-client-id',
     'SPOTIFY_CLIENT_SECRET=dummy-client-secret',
     'SPOTIFY_CLIENT_REDIRECT_URI=http://127.0.0.1:8000/api/v1/spotify/callback',
+    # Last FM client adapter required settings
+    'LASTFM_CLIENT_API_KEY=dummy-client-id',
+    'LASTFM_CLIENT_SECRET=dummy-client-secret',
 ]
 filterwarnings = [
     "always",  # Equivalent to -W always
