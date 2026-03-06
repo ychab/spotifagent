@@ -12,7 +12,7 @@ from museflow.domain.types import MusicProvider
 from museflow.infrastructure.adapters.providers.spotify.client import SpotifyOAuthClientAdapter
 from museflow.infrastructure.adapters.providers.spotify.library import SpotifyLibraryAdapter
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_track
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyTopTrackPage
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPage
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyTrack
 from museflow.infrastructure.adapters.providers.spotify.session import SpotifyOAuthSessionClient
 from museflow.infrastructure.entrypoints.cli.dependencies import get_spotify_client
@@ -89,7 +89,7 @@ class TestSpotifyLibraryLive:
     def tracks(self, user: User) -> list[Track]:
         filepath = ASSETS_DIR / "wiremock" / "spotify" / "__files" / "top_tracks_page_1.json"
         top_tracks_response = json.loads(filepath.read_text())
-        top_track_page = SpotifyTopTrackPage.model_validate(top_tracks_response)
+        top_track_page = SpotifyPage[SpotifyTrack].model_validate(top_tracks_response)
 
         return [
             to_domain_track(SpotifyTrack.model_validate(item), user_id=user.id) for item in top_track_page.items[:3]

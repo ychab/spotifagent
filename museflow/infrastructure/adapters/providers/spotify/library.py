@@ -20,13 +20,13 @@ from museflow.infrastructure.adapters.providers.spotify.client import SpotifyOAu
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_artist
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_playlist
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_track
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyArtist
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyItem
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPage
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPlaylist
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPlaylistPage
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPlaylistTrackPage
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifySavedTrackPage
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyTopArtistPage
-from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyTopTrackPage
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPlaylistTrack
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifySavedTrack
+from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyTrack
 from museflow.infrastructure.adapters.providers.spotify.session import SpotifyOAuthSessionClient
 from museflow.infrastructure.adapters.providers.spotify.types import LocalUnsupported
 from museflow.infrastructure.adapters.providers.spotify.types import SpotifyTimeRange
@@ -98,7 +98,7 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
     ) -> list[Artist]:
         return await self._fetch_pages(
             endpoint="/me/top/artists",
-            page_model=SpotifyTopArtistPage,
+            page_model=SpotifyPage[SpotifyArtist],
             page_processor=self._extract_top_artists,
             params={"time_range": time_range},
             page_size=page_size,
@@ -114,7 +114,7 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
     ) -> list[Track]:
         return await self._fetch_pages(
             endpoint="/me/top/tracks",
-            page_model=SpotifyTopTrackPage,
+            page_model=SpotifyPage[SpotifyTrack],
             page_processor=self._extract_top_tracks,
             params={"time_range": time_range},
             page_size=page_size,
@@ -125,7 +125,7 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
     async def get_saved_tracks(self, page_size: int = 50, max_pages: int | None = None) -> list[Track]:
         return await self._fetch_pages(
             endpoint="/me/tracks",
-            page_model=SpotifySavedTrackPage,
+            page_model=SpotifyPage[SpotifySavedTrack],
             page_processor=self._extract_saved_tracks,
             page_size=page_size,
             max_pages=max_pages,
@@ -140,7 +140,7 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
         """
         playlists = await self._fetch_pages(
             endpoint="/me/playlists",
-            page_model=SpotifyPlaylistPage,
+            page_model=SpotifyPage[SpotifyPlaylist],
             page_processor=self._extract_playlists,
             page_size=page_size,
             max_pages=max_pages,
@@ -205,7 +205,7 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
         try:
             tracks = await self._fetch_pages(
                 endpoint=f"/playlists/{playlist.id}/items",
-                page_model=SpotifyPlaylistTrackPage,
+                page_model=SpotifyPage[SpotifyPlaylistTrack],
                 page_processor=self._extract_playlist_tracks,
                 params={
                     "fields": "total,limit,offset,items(item(id,name,href,popularity,is_local,artists(id,name)))",
@@ -222,17 +222,21 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
 
         return tracks
 
-    async def _fetch_pages[SpotifyPageType: SpotifyPage, MediaItemType: BaseMediaItem | SpotifyPlaylist](
+    async def _fetch_pages[
+        SpotifyItemType: SpotifyItem | SpotifySavedTrack | SpotifyPlaylistTrack,
+        MediaItemType: BaseMediaItem | SpotifyPlaylist,
+    ](
         self,
         endpoint: str,
-        page_model: type[SpotifyPageType],
-        page_processor: Callable[[SpotifyPageType, int], list[MediaItemType]],
+        page_model: type[SpotifyPage[SpotifyItemType]],
+        page_processor: Callable[[SpotifyPage[SpotifyItemType], int], list[MediaItemType]],
         method: str = "GET",
         params: dict[str, Any] | None = None,
         offset: int = 0,
         page_size: int = 50,
         max_pages: int | None = None,
         prefix_log: str = "",
+        response_key: str | None = None,
     ) -> list[MediaItemType]:
         """
         Generic method to fetch paginated resources from Spotify.
@@ -255,6 +259,9 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
                     **(params or {}),
                 },
             )
+
+            if response_key and response_key in data:
+                data = data[response_key]
 
             try:
                 page = page_model.model_validate(data)
@@ -296,23 +303,23 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
     # Extractors
     # -------------------------------------------------------------------------
 
-    def _extract_playlists(self, page: SpotifyPlaylistPage, *_: Any) -> list[SpotifyPlaylist]:
+    def _extract_playlists(self, page: SpotifyPage[SpotifyPlaylist], *_: Any) -> list[SpotifyPlaylist]:
         return list(page.items)
 
-    def _extract_top_artists(self, page: SpotifyTopArtistPage, offset: int) -> list[Artist]:
+    def _extract_top_artists(self, page: SpotifyPage[SpotifyArtist], offset: int) -> list[Artist]:
         return [
             to_domain_artist(item, user_id=self.user.id, is_top=True, position=offset + i + 1)
             for i, item in enumerate(page.items)
         ]
 
-    def _extract_top_tracks(self, page: SpotifyTopTrackPage, offset: int) -> list[Track]:
+    def _extract_top_tracks(self, page: SpotifyPage[SpotifyTrack], offset: int) -> list[Track]:
         return [
             to_domain_track(item, user_id=self.user.id, is_top=True, position=offset + i + 1)
             for i, item in enumerate(page.items)
         ]
 
-    def _extract_saved_tracks(self, page: SpotifySavedTrackPage, *_: Any) -> list[Track]:
+    def _extract_saved_tracks(self, page: SpotifyPage[SpotifySavedTrack], *_: Any) -> list[Track]:
         return [to_domain_track(item.track, user_id=self.user.id, is_saved=True) for item in page.items]
 
-    def _extract_playlist_tracks(self, page: SpotifyPlaylistTrackPage, *_: Any) -> list[Track]:
+    def _extract_playlist_tracks(self, page: SpotifyPage[SpotifyPlaylistTrack], *_: Any) -> list[Track]:
         return [to_domain_track(item.item, user_id=self.user.id) for item in page.items if item.item]
