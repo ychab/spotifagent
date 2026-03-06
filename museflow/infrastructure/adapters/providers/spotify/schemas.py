@@ -87,18 +87,3 @@ class SpotifyPage[T: SpotifyItem | SpotifySavedTrack | SpotifyPlaylistTrack](Bas
     total: Annotated[int, Field(ge=0)]
     limit: Annotated[int, Field(ge=0)]
     offset: Annotated[int, Field(ge=0)]
-
-
-class SpotifyPlaylistPage(SpotifyPage[SpotifyPlaylist]): ...
-
-
-class SpotifySavedTrackPage(SpotifyPage[SpotifySavedTrack]): ...
-
-
-class SpotifyPlaylistTrackPage(SpotifyPage[SpotifyPlaylistTrack]): ...
-
-
-class SpotifyTopArtistPage(SpotifyPage[SpotifyArtist]): ...
-
-
-class SpotifyTopTrackPage(SpotifyPage[SpotifyTrack]): ...

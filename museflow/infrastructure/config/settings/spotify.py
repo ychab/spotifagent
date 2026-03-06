@@ -25,6 +25,7 @@ class SpotifySettings(BaseSettings):
     REDIRECT_URI: HttpUrl = Field(default=HttpUrl("http://127.0.0.1:8000/api/v1/spotify/callback"))
 
     HTTP_TIMEOUT: float = 30.0
+    HTTP_MAX_RETRIES: int = 5
 
     TOKEN_BUFFER_SECONDS: int = 60 * 5
 

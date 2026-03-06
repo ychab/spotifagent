@@ -3,13 +3,14 @@
     "method": "GET",
     "urlPath": "/me/playlists",
     "queryParameters": {
-      "offset": { "equalTo": "0" },
-      "limit": { "equalTo": "1" }
+      "limit": { "equalTo": "1" },
+      "offset": { "matches": "[0-9]+" }
     }
   },
   "response": {
     "status": 200,
-    "bodyFileName": "playlists_page_1.json",
+    "transformers": ["response-template"],
+    "bodyFileName": "playlists_page_{{math request.query.offset '+' 1}}.json",
     "headers": {
       "Content-Type": "application/json"
     }

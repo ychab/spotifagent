@@ -62,8 +62,8 @@ class TestSpotifySyncMusic:
         )
 
         playlist_track_map: dict[str, Any] = {
-            "playlist_items_rap": wiremock_playlist_response["items"][0],
-            "playlist_items_salsa": wiremock_playlist_response["items"][1],
+            "playlist_items_0wKgiV47itigJyxBgFxAu1": wiremock_playlist_response["items"][0],
+            "playlist_items_1xnKqEZDpMWvrts4M9I9GC": wiremock_playlist_response["items"][1],
         }
         for template, playlist in playlist_track_map.items():
             playlist_track_items = []
@@ -145,7 +145,7 @@ class TestSpotifySyncMusic:
         page_max = getattr(request, "param", 2)
 
         for page_number in range(1, page_max + 1):
-            for template in ["playlist_items_rap", "playlist_items_salsa"]:
+            for template in ["playlist_items_0wKgiV47itigJyxBgFxAu1", "playlist_items_1xnKqEZDpMWvrts4M9I9GC"]:
                 for item in wiremock_response(f"{template}_page_{page_number}")["items"]:
                     track = await TrackModelFactory.create_async(
                         user_id=user.id,

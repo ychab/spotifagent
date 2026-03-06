@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 import pytest
+from tenacity import stop_after_attempt
 
 from museflow.domain.entities.auth import OAuthProviderState
 from museflow.domain.entities.auth import OAuthProviderUserToken
@@ -283,8 +284,11 @@ async def auth_token(request: pytest.FixtureRequest, user: User) -> OAuthProvide
 
 
 @pytest.fixture
-async def spotify_client() -> AsyncGenerator[SpotifyOAuthClientAdapter]:
+async def spotify_client(monkeypatch: pytest.MonkeyPatch) -> AsyncGenerator[SpotifyOAuthClientAdapter]:
     base_url: str | None = os.getenv("WIREMOCK_SPOTIFY_BASE_URL")
+
+    retry_method = SpotifyOAuthClientAdapter.make_user_api_call
+    monkeypatch.setattr(retry_method.retry, "stop", stop_after_attempt(1))  # type: ignore[attr-defined]
 
     async with SpotifyOAuthClientAdapter(
         client_id="dummy-client-id",

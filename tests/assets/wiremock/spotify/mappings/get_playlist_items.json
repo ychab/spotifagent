@@ -1,9 +1,9 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/playlists/1xnKqEZDpMWvrts4M9I9GC/items",
+    "urlPathPattern": "/playlists/([a-zA-Z0-9]+)/items",
     "queryParameters": {
-      "offset": { "equalTo": "0" },
+      "offset": { "matches": "[0-9]+" },
       "limit": { "equalTo": "1" },
       "fields": { "equalTo": "total,limit,offset,items(item(id,name,href,popularity,is_local,artists(id,name)))" },
       "additional_types": { "equalTo": "track" }
@@ -11,7 +11,8 @@
   },
   "response": {
     "status": 200,
-    "bodyFileName": "playlist_items_salsa_page_1.json",
+    "transformers": ["response-template"],
+    "bodyFileName": "playlist_items_{{request.pathSegments.[1]}}_page_{{math request.query.offset '+' 1}}.json",
     "headers": {
       "Content-Type": "application/json"
     }

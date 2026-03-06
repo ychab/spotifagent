@@ -1,15 +1,16 @@
 {
   "request": {
     "method": "GET",
-    "urlPath": "/me/top/tracks",
+    "urlPath": "/me/top/artists",
     "queryParameters": {
-      "offset": { "equalTo": "10" },
+      "offset": { "matches": "[0-9]+" },
       "limit": { "equalTo": "5" }
     }
   },
   "response": {
     "status": 200,
-    "bodyFileName": "top_tracks_page_3.json",
+    "transformers": ["response-template"],
+    "bodyFileName": "top_artists_page_{{math (math request.query.offset '/' 5) '+' 1}}.json",
     "headers": {
       "Content-Type": "application/json"
     }

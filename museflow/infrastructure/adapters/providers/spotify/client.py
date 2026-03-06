@@ -21,6 +21,7 @@ from museflow.infrastructure.adapters.providers.spotify.exceptions import Spotif
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_token_payload
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyToken
 from museflow.infrastructure.adapters.providers.spotify.types import SpotifyScope
+from museflow.infrastructure.config.settings.spotify import spotify_settings
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ class SpotifyOAuthClientAdapter(ProviderOAuthClientPort):
     @retry(
         retry=retry_if_exception(_is_retryable_error),
         wait=wait_exponential(multiplier=1, min=2, max=60),  # 2 + 4 + 8 + 16 + 32 = 62 seconds
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(spotify_settings.HTTP_MAX_RETRIES),
         reraise=True,
     )
     async def make_user_api_call(

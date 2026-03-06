@@ -72,7 +72,7 @@ services:
       - "8444:8443"
     volumes:
       - ./tests/assets/wiremock/spotify:/home/wiremock
-    command: ["--verbose", "--https-port", "8443"]
+    command: ["--verbose", "--https-port", "8443", "--global-response-templating"]
 
 volumes:
   db_data:
