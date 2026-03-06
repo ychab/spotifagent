@@ -111,6 +111,10 @@ class TestSpotifyLibraryLive:
         playlist_tracks = await spotify_library_live.get_playlist_tracks(page_size=2, max_pages=1)
         assert len(playlist_tracks) == 2 * (2 * 1)
 
+    async def test_search(self, spotify_library: SpotifyLibraryAdapter) -> None:
+        tracks = await spotify_library.search_tracks(track="bedstories", page_size=5, max_pages=1)
+        assert len(tracks) == 5
+
     async def test_playlist_create(
         self,
         spotify_library_live: SpotifyLibraryAdapter,

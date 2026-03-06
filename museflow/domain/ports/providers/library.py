@@ -78,6 +78,35 @@ class ProviderLibraryPort(ABC):
         ...
 
     @abstractmethod
+    async def search_tracks(
+        self,
+        track: str,
+        artists: list[str] | None = None,
+        genres: list[str] | None = None,
+        is_new: bool = False,
+        is_underground: bool = False,
+        isrc: str | None = None,
+        page_size: int = 20,
+        max_pages: int | None = None,
+    ) -> list[Track]:
+        """Retrieves a list of tracks based on the search criteria.
+
+        Args:
+            track: The name of the track to search for.
+            artists: A list of artist names to filter by.
+            genres: A list of genres to filter by.
+            is_new: Whether to include only new tracks (periodicity depends on the provider).
+            is_underground: Whether to include underground tracks (depends on the provider).
+            isrc: An optional ISRC (International Standard Recording Code) to filter by.
+            page_size: An optional maximum number of tracks per page.
+            max_pages: The maximum number of pages to retrieve.
+
+        Returns:
+            A list of `Track` entities.
+        """
+        ...
+
+    @abstractmethod
     async def create_playlist(self, name: str, tracks: list[Track], is_public: bool = False) -> Playlist:
         """Create a user's playlist with the given tracks.
 

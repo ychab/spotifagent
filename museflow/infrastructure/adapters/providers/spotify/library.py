@@ -20,6 +20,7 @@ from museflow.infrastructure.adapters.providers.spotify.client import SpotifyOAu
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_artist
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_playlist
 from museflow.infrastructure.adapters.providers.spotify.mappers import to_domain_track
+from museflow.infrastructure.adapters.providers.spotify.queries import SpotifySearchTrackQuery
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyArtist
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyItem
 from museflow.infrastructure.adapters.providers.spotify.schemas import SpotifyPage
@@ -163,6 +164,40 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
         tracks = [track for task in tasks for track in task.result()]
         # Then remove duplicates due to multiple playlists with the same tracks.
         return list({track.provider_id: track for track in tracks}.values())
+
+    async def search_tracks(
+        self,
+        track: str,
+        artists: list[str] | None = None,
+        genres: list[str] | None = None,
+        is_new: bool = False,
+        is_underground: bool = False,
+        isrc: str | None = None,
+        page_size: int = 10,
+        max_pages: int | None = None,
+    ) -> list[Track]:
+        query_builder = SpotifySearchTrackQuery(
+            track=track,
+            artists=artists or [],
+            genres=genres or [],
+            is_new=is_new,
+            is_underground=is_underground,
+            isrc=isrc,
+        )
+
+        return await self._fetch_pages(
+            endpoint="/search",
+            page_model=SpotifyPage[SpotifyTrack],
+            page_processor=self._extract_search_tracks,
+            page_size=page_size,
+            max_pages=max_pages,
+            prefix_log=f"[Search track {track}]",
+            params={
+                "q": query_builder.get_query(),
+                "type": "track",
+            },
+            response_key="tracks",
+        )
 
     async def create_playlist(self, name: str, tracks: list[Track], is_public: bool = False) -> Playlist:
         # First, create the playlist
@@ -323,3 +358,6 @@ class SpotifyLibraryAdapter(ProviderLibraryPort):
 
     def _extract_playlist_tracks(self, page: SpotifyPage[SpotifyPlaylistTrack], *_: Any) -> list[Track]:
         return [to_domain_track(item.item, user_id=self.user.id) for item in page.items if item.item]
+
+    def _extract_search_tracks(self, page: SpotifyPage[SpotifyTrack], *_: Any) -> list[Track]:
+        return [to_domain_track(item, user_id=self.user.id) for item in page.items if item]

@@ -351,6 +351,48 @@ class TestSpotifyLibrary:
         assert "Skip playlist Salsa with error" in caplog.text
         assert "Unsupported local files" in caplog.text
 
+    async def test__search__nominal(
+        self,
+        playlist_tracks: list[Track],
+        spotify_library: SpotifyLibraryAdapter,
+    ) -> None:
+        tracks = await spotify_library.search_tracks(track="bedstories", page_size=5)
+        assert len(tracks) == 15
+
+        track_first = tracks[0]
+        assert track_first.id is not None
+        assert track_first.user_id == spotify_library.user.id
+        assert track_first.name == "Bedtime Stories (feat. The Weeknd) - From SR3MM"
+        assert track_first.popularity == 50
+        assert track_first.is_saved is False
+        assert track_first.is_top is False
+        assert track_first.top_position is None
+        assert len(track_first.artists) == 4
+        assert track_first.artists[0].provider_id == "7iZtZyCzp3LItcw1wtPI3D"
+        assert track_first.artists[0].name == "Rae Sremmurd"
+        assert track_first.artists[1].provider_id == "1zNqQNIdeOUZHb8zbZRFMX"
+        assert track_first.artists[1].name == "Swae Lee"
+        assert track_first.artists[2].provider_id == "7EEiVZvj6RCEtVX2F2pyxu"
+        assert track_first.artists[2].name == "Slim Jxmmi"
+        assert track_first.artists[3].provider_id == "1Xyo4u8uXC1ZmMpatF05PJ"
+        assert track_first.artists[3].name == "The Weeknd"
+        assert track_first.provider == MusicProvider.SPOTIFY
+        assert track_first.provider_id == "6nI74KsH94IN0J2vp5shdT"
+
+        track_last = tracks[-1]
+        assert track_last.id is not None
+        assert track_last.user_id == spotify_library.user.id
+        assert track_last.name == "Secret"
+        assert track_last.popularity == 59
+        assert track_last.is_saved is False
+        assert track_last.is_top is False
+        assert track_last.top_position is None
+        assert len(track_last.artists) == 1
+        assert track_last.artists[0].provider_id == "6tbjWDEIzxoDsBA1FuhfPW"
+        assert track_last.artists[0].name == "Madonna"
+        assert track_last.provider == MusicProvider.SPOTIFY
+        assert track_last.provider_id == "15FcP9qwmIKqaD5NhfhNpu"
+
     async def test__create_playlist__nominal(
         self,
         playlist_tracks: list[Track],

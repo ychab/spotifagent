@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/search",
+    "queryParameters": {
+      "offset": { "matches": "[0-9]+" },
+      "limit": { "equalTo": "5" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "transformers": ["response-template"],
+    "bodyFileName": "search_page_{{math (math request.query.offset '/' 5) '+' 1}}.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
